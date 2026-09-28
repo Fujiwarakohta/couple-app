@@ -20,12 +20,14 @@ import {
   CATEGORY_SHORT_LABEL,
   OWNERS,
   OWNER_LABEL,
+  ROLE_LABEL,
   STATUSES,
   STATUS_LABEL,
 } from '../data/labels'
 import { PHASES } from '../data/static'
 import { taskUnconfirmed } from '../data/unconfirmed'
 import { formatJaDate, lifeStage } from '../lib/dates'
+import { BOTH_CHECKED, anyChecked, checkSummary, isShared } from '../lib/sharedTask'
 import {
   DEFAULT_TASK_FILTER,
   currentPhaseId,
@@ -44,29 +46,42 @@ const OWNER_FILTER_OPTIONS = [
 
 const OWNER_OPTIONS = OWNERS.map((o) => ({ value: o, label: OWNER_LABEL[o] }))
 const STATUS_OPTIONS = STATUSES.map((s) => ({ value: s, label: STATUS_LABEL[s] }))
+/** 担当が「両方」のときは、完了を手で選べない（2人のチェックで自動的に完了になる）。 */
+const SHARED_STATUS_OPTIONS = STATUS_OPTIONS.filter((o) => o.value !== 'done')
 
 function StatusToggle({ task }: { task: Task }) {
-  const { actions } = useAppData()
+  const { actions, role } = useAppData()
+  const shared = isShared(task.owner)
   const done = task.status === 'done'
+  // 「両方」のタスクでは、このボタンは自分の完了チェックを表す
+  const mine = shared && role ? task.doneBy[role] : done
   const next: TaskStatus = done || task.status === 'na' ? 'todo' : 'done'
-  const label = `「${task.title}」を${next === 'done' ? '完了にする' : '未着手に戻す'}`
+  const label = shared
+    ? `「${task.title}」の自分の完了チェックを${mine ? '外す' : '付ける'}（${checkSummary(task.doneBy)}）`
+    : `「${task.title}」を${next === 'done' ? '完了にする' : '未着手に戻す'}`
+  const toggle = () => {
+    if (shared) actions.setTaskCheck(task, !mine)
+    else actions.updateTask(task.id, { status: next }, 'status')
+  }
   return (
     <button
       type="button"
       className="flex size-11 shrink-0 items-center justify-center"
       aria-label={label}
-      aria-pressed={done}
-      onClick={() => actions.updateTask(task.id, { status: next }, 'status')}
+      aria-pressed={mine}
+      onClick={toggle}
     >
       <span
         className={`flex size-7 items-center justify-center rounded-full border-2 transition-colors duration-150 ${
           done
             ? 'border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900'
-            : 'border-neutral-600 dark:border-neutral-300'
+            : mine
+              ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
+              : 'border-neutral-600 dark:border-neutral-300'
         }`}
       >
-        {done && <CheckIcon size={18} />}
-        {task.status === 'na' && <span aria-hidden="true">−</span>}
+        {(done || mine) && <CheckIcon size={18} />}
+        {task.status === 'na' && !mine && <span aria-hidden="true">−</span>}
       </span>
     </button>
   )
@@ -93,6 +108,9 @@ function TaskRow({ task, onEdit }: { task: Task; onEdit: (task: Task) => void })
           <OwnerBadge owner={task.owner} />
           {task.status !== 'todo' && (
             <span className="badge border border-current">{STATUS_LABEL[task.status]}</span>
+          )}
+          {isShared(task.owner) && anyChecked(task.doneBy) && (
+            <span className="badge border border-current">{checkSummary(task.doneBy)}</span>
           )}
           {unconfirmed && <UnconfirmedBadge reason={unconfirmed.reason} />}
           {task.dueDate ? (
@@ -158,10 +176,14 @@ function ContactTemplate({
 }
 
 function EditTaskForm({ task, onClose }: { task: Task; onClose: () => void }) {
-  const { actions } = useAppData()
+  const { actions, role } = useAppData()
   const [title, setTitle] = useState(task.title)
   const [owner, setOwner] = useState<Owner>(task.owner)
   const [status, setStatus] = useState<TaskStatus>(task.status)
+  const [statusTouched, setStatusTouched] = useState(false)
+  const [myCheck, setMyCheck] = useState(role ? task.doneBy[role] : false)
+  const shared = isShared(owner)
+  const partnerRole = role === 'father' ? 'mother' : 'father'
   const [dueDate, setDueDate] = useState(task.dueDate ?? '')
   const [note, setNote] = useState(task.note)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -175,13 +197,26 @@ function EditTaskForm({ task, onClose }: { task: Task; onClose: () => void }) {
       owner !== task.owner ||
       (dueDate || null) !== task.dueDate ||
       note !== task.note
-    const statusChanged = status !== task.status
+    // 「両方」のタスクでは、ステータスを選び直したときだけ書き換える（完了はチェックで決まる）
+    const statusChanged = shared ? statusTouched && status !== 'done' : status !== task.status
+    const becameShared = shared && !isShared(task.owner)
     if (edited || statusChanged) {
       actions.updateTask(
         task.id,
-        { title: trimmed, owner, status, dueDate: dueDate || null, note },
+        {
+          title: trimmed,
+          owner,
+          dueDate: dueDate || null,
+          note,
+          ...(statusChanged ? { status } : {}),
+          // 完了済みのタスクを「両方」に変えたときは、2人ともチェック済みとして引き継ぐ
+          ...(becameShared && task.status === 'done' ? { doneBy: BOTH_CHECKED } : {}),
+        },
         edited ? 'edit' : 'status',
       )
+    }
+    if (shared && !becameShared && role && myCheck !== task.doneBy[role]) {
+      actions.setTaskCheck(task, myCheck)
     }
     onClose()
   }
@@ -212,8 +247,41 @@ function EditTaskForm({ task, onClose }: { task: Task; onClose: () => void }) {
           required
         />
       </Field>
-      <Choice legend="ステータス" options={STATUS_OPTIONS} value={status} onChange={setStatus} />
       <Choice legend="担当" options={OWNER_OPTIONS} value={owner} onChange={setOwner} />
+      {shared && isShared(task.owner) && role && (
+        <fieldset className="rounded-lg border border-neutral-400 p-3">
+          <legend className="px-1 text-sm font-semibold">完了チェック</legend>
+          <p className="muted text-sm">2人ともチェックすると、このタスクは完了になります。</p>
+          <Check
+            id="task-my-check"
+            label={`自分（${ROLE_LABEL[role]}）の分は完了した`}
+            checked={myCheck}
+            onChange={setMyCheck}
+          />
+          <p className="text-[15px]">
+            相手（{ROLE_LABEL[partnerRole]}）：{task.doneBy[partnerRole] ? 'チェック済み' : 'まだ'}
+          </p>
+        </fieldset>
+      )}
+      {shared && !isShared(task.owner) && (
+        <p className="muted text-sm">
+          担当を「両方」にすると、2人がそれぞれチェックしたときに完了になります。保存後にチェックできます。
+        </p>
+      )}
+      <Choice
+        legend="ステータス"
+        options={shared ? SHARED_STATUS_OPTIONS : STATUS_OPTIONS}
+        value={status}
+        onChange={(s) => {
+          setStatus(s)
+          setStatusTouched(true)
+        }}
+      />
+      {shared && (
+        <p className="muted -mt-2 text-xs">
+          「完了」は選べません。2人のチェックがそろうと自動で完了になります。
+        </p>
+      )}
       <Field
         label="期限"
         htmlFor="task-due"

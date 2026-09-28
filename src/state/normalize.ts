@@ -1,5 +1,6 @@
 import type { DocData, DocWithId } from '../lib/backend'
 import { isValidYmd } from '../lib/dates'
+import { effectiveStatus, readDoneBy } from '../lib/sharedTask'
 import type {
   AdviceState,
   BpValue,
@@ -38,7 +39,7 @@ function oneOf<T extends string>(v: unknown, allowed: readonly T[], fallback: T)
 const OWNERS: readonly Owner[] = ['母', '父', '両']
 const STATUSES: readonly TaskStatus[] = ['todo', 'doing', 'done', 'na']
 const CATEGORIES: readonly TaskCategory[] = ['procedure', 'money', 'health', 'prep', 'father_work']
-const ACTIONS: readonly TaskAction[] = ['create', 'edit', 'status', 'delete']
+const ACTIONS: readonly TaskAction[] = ['create', 'edit', 'status', 'delete', 'check', 'uncheck']
 const EVENT_TYPES: readonly EventType[] = [
   'medical',
   'admin',
@@ -61,15 +62,20 @@ const RECEIPT_KINDS: readonly ReceiptKind[] = [
 ]
 
 export function toTask(d: DocWithId): Task {
+  const owner = oneOf(d.owner, OWNERS, '両')
+  const storedStatus = oneOf(d.status, STATUSES, 'todo')
+  const { doneBy, stored } = readDoneBy(d.doneBy, storedStatus)
   return {
     id: d.id,
     phase: str(d.phase, 'p0'),
     category: oneOf(d.category, CATEGORIES, 'procedure'),
-    owner: oneOf(d.owner, OWNERS, '両'),
+    owner,
     title: str(d.title),
     dueHint: str(d.dueHint),
     dueDate: ymd(d.dueDate),
-    status: oneOf(d.status, STATUSES, 'todo'),
+    status: effectiveStatus(owner, storedStatus, doneBy),
+    doneBy,
+    doneByStored: stored,
     note: str(d.note),
     deleted: bool(d.deleted),
     updatedAt: num(d.updatedAt),

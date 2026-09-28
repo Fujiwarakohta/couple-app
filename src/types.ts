@@ -6,7 +6,13 @@ export type Role = 'father' | 'mother'
 
 export type TaskStatus = 'todo' | 'doing' | 'done' | 'na'
 export type TaskCategory = 'procedure' | 'money' | 'health' | 'prep' | 'father_work'
-export type TaskAction = 'create' | 'edit' | 'status' | 'delete'
+export type TaskAction = 'create' | 'edit' | 'status' | 'delete' | 'check' | 'uncheck'
+
+/** 担当が「両方」のタスクの完了チェック（父・母それぞれ）。 */
+export interface DoneBy {
+  father: boolean
+  mother: boolean
+}
 
 export interface Task {
   id: string
@@ -17,7 +23,15 @@ export interface Task {
   /** 期限の文字表記（元資料の記述）。アプリでは解釈しない。 */
   dueHint: string
   dueDate: Ymd | null
+  /**
+   * 担当が「両方」のときは、doneBy から求めた値（2人ともチェックで done）。
+   * それ以外は保存されている値。
+   */
   status: TaskStatus
+  /** 完了チェック。担当が「両方」のときだけ使う（指示書のモデルへの追加項目）。 */
+  doneBy: DoneBy
+  /** doneBy が Firestore に保存済みか（未保存のタスクを最初に書くときの判断に使う）。 */
+  doneByStored: boolean
   note: string
   deleted: boolean
   updatedAt: number | null

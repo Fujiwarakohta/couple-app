@@ -9,6 +9,7 @@ import { DISCLAIMER, EVENT_TYPE_LABEL, PARTNER_CALL } from '../data/labels'
 import { ADVICE } from '../data/static'
 import { adviceWeek, formatJaDate, formatJaRange, formatWeeks, lifeStage } from '../lib/dates'
 import { homeAdvice, partnerUpdates, urgentItems, urgentLabel, type UrgentItem } from '../lib/home'
+import { checkSummary, isShared } from '../lib/sharedTask'
 import { useAppData } from '../state/AppContext'
 import type { Role } from '../types'
 
@@ -50,13 +51,27 @@ function StageCard() {
 }
 
 function UrgentRow({ item }: { item: UrgentItem }) {
-  const { actions } = useAppData()
+  const { actions, role } = useAppData()
   const title = item.kind === 'task' ? item.task.title : item.event.title
   const owner = item.kind === 'task' ? item.task.owner : item.event.owner
+  // 担当が「両方」のタスクは、自分の完了チェックだけを切り替える
+  const sharedTask = item.kind === 'task' && isShared(item.task.owner) ? item.task : null
+  const mine = sharedTask && role ? sharedTask.doneBy[role] : false
   const complete = () => {
-    if (item.kind === 'task') actions.updateTask(item.id, { status: 'done' }, 'status')
+    if (sharedTask) actions.setTaskCheck(sharedTask, !mine)
+    else if (item.kind === 'task') actions.updateTask(item.id, { status: 'done' }, 'status')
     else actions.patchEvent(item.id, { done: true })
   }
+  const buttonText = sharedTask
+    ? mine
+      ? '自分は済み'
+      : '自分の分を完了'
+    : item.kind === 'task'
+      ? '完了'
+      : '済み'
+  const buttonLabel = sharedTask
+    ? `「${title}」の自分の完了チェックを${mine ? '外す' : '付ける'}`
+    : `「${title}」を${item.kind === 'task' ? '完了' : '済み'}にする`
   return (
     <li className="flex items-start gap-2 border-t border-red-700/40 py-3 first:border-t-0 first:pt-0 last:pb-0 dark:border-red-400/40">
       <div className="min-w-0 flex-1">
@@ -73,14 +88,20 @@ function UrgentRow({ item }: { item: UrgentItem }) {
             ? `${EVENT_TYPE_LABEL[item.event.type]}・${formatJaRange(item.range)}`
             : `タスク ${item.id}・期限 ${formatJaDate(item.date)}`}
         </p>
+        {sharedTask && (
+          <p className="mt-0.5 text-sm">
+            完了チェック：{checkSummary(sharedTask.doneBy)}（2人ともチェックで完了）
+          </p>
+        )}
       </div>
       <button
         type="button"
         className="btn border border-red-800 bg-white px-3 text-sm text-red-900 dark:border-red-300 dark:bg-red-950 dark:text-red-100"
-        aria-label={`「${title}」を${item.kind === 'task' ? '完了' : '済み'}にする`}
+        aria-label={buttonLabel}
+        aria-pressed={sharedTask ? mine : undefined}
         onClick={complete}
       >
-        {item.kind === 'task' ? '完了' : '済み'}
+        {buttonText}
       </button>
     </li>
   )

@@ -9,7 +9,13 @@ import { lifeStage } from './dates'
 import { bandsOnDay, buildBands, eventsOnDay, monthGrid, resolveEvents } from './schedule'
 import { currentPhaseId, filterTasks, progressOf } from './tasks'
 
-const tasks = tasksJson.map((t) => ({ ...t, deleted: false, createdBy: 'seed' })) as Task[]
+const tasks = tasksJson.map((t) => ({
+  ...t,
+  doneBy: { father: false, mother: false },
+  doneByStored: false,
+  deleted: false,
+  createdBy: 'seed',
+})) as Task[]
 const events = scheduleJson.events.map((e) => ({ ...e, updatedAt: null, updatedBy: null })) as ScheduleEvent[]
 const EDD = '2027-05-24'
 

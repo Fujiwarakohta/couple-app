@@ -17,6 +17,8 @@ function task(partial: Partial<Task>): Task {
     dueHint: '',
     dueDate: null,
     status: 'todo',
+    doneBy: { father: false, mother: false },
+    doneByStored: false,
     note: '',
     deleted: false,
     updatedAt: null,
@@ -165,6 +167,28 @@ describe('homeAdvice', () => {
     expect(result.visible[0].id).toBe('a06')
     expect(result.visible.some((a) => a.id === 'a01')).toBe(false)
     expect(result.read.map((a) => a.id)).toEqual(['a01'])
+  })
+})
+
+describe('partnerUpdates：担当が「両方」のタスク', () => {
+  const now = Date.parse('2027-01-10T12:00:00+09:00')
+
+  it('片方のチェックと、2人そろった完了を言い分ける', () => {
+    const result = partnerUpdates(
+      [
+        task({ id: 't004', owner: '両', status: 'doing', lastAction: 'check', updatedBy: 'mother', updatedAt: now - 1 }),
+        task({ id: 't005', owner: '両', status: 'done', lastAction: 'check', updatedBy: 'mother', updatedAt: now - 2 }),
+        task({ id: 't011', owner: '両', status: 'todo', lastAction: 'uncheck', updatedBy: 'mother', updatedAt: now - 3 }),
+      ],
+      'me',
+      '妻',
+      now,
+    )
+    expect(result.map((r) => r.text)).toEqual([
+      '妻がt004の自分の分を完了にしました',
+      '妻がt005を完了にしました（2人とも完了）',
+      '妻がt011の完了チェックを外しました',
+    ])
   })
 })
 

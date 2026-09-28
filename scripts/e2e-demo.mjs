@@ -226,6 +226,82 @@ try {
   check('償還払い：証憑の不足を表示', body.includes('証憑に不足あり'))
   await page.screenshot({ path: resolve(OUT, 'records-receipts-filled.png'), fullPage: true })
 
+  // ---- 担当が「両方」のタスク：2人ともチェックで完了 ----
+  {
+    const SHARED = '受入れ可否を確認する'
+    const progress = async () => {
+      const m = /全体\s*(\d+) \/ (\d+)/.exec(await text(page))
+      return m ? { done: Number(m[1]), total: Number(m[2]) } : null
+    }
+    const rowText = () =>
+      page.evaluate((t) => {
+        const li = [...document.querySelectorAll('li')].find((el) => el.textContent.includes(t))
+        return li ? li.textContent : ''
+      }, SHARED)
+
+    await page.goto(`${BASE}/tasks?as=father`, { waitUntil: 'networkidle0' })
+    const before = await progress()
+
+    await clickBy(page, `${SHARED}」の自分の完了チェックを付ける`, { selector: 'button' })
+    let row = await rowText()
+    let now = await progress()
+    check('両方：父だけチェック → 「父 済・母 未」で、完了にはならない', row.includes('父 済・母 未') && row.includes('進行中') && !row.includes('完了'))
+    check('両方：父だけチェック → 進捗は増えない', now.done === before.done, `${now.done} / ${now.total}`)
+
+    await page.goto(`${BASE}/?as=mother`, { waitUntil: 'networkidle0' })
+    body = await text(page)
+    check('両方：母のホームに「夫がt004の自分の分を完了にしました」', body.includes('夫がt004の自分の分を完了にしました'))
+
+    await page.goto(`${BASE}/tasks?as=mother`, { waitUntil: 'networkidle0' })
+    await clickBy(page, `${SHARED}」の自分の完了チェックを付ける`, { selector: 'button' })
+    row = await rowText()
+    now = await progress()
+    check('両方：母もチェック → 「父 済・母 済」で完了になる', row.includes('父 済・母 済') && row.includes('完了'))
+    check('両方：2人そろうと進捗が1つ増える', now.done === before.done + 1, `${now.done} / ${now.total}`)
+
+    await page.goto(`${BASE}/?as=father`, { waitUntil: 'networkidle0' })
+    body = await text(page)
+    check('両方：父のホームに「妻がt004を完了にしました（2人とも完了）」', body.includes('妻がt004を完了にしました（2人とも完了）'))
+
+    await page.goto(`${BASE}/tasks?as=father`, { waitUntil: 'networkidle0' })
+    await clickBy(page, `${SHARED}」の自分の完了チェックを外す`, { selector: 'button' })
+    row = await rowText()
+    now = await progress()
+    check('両方：父がチェックを外す → 完了ではなくなり、母のチェックは残る', row.includes('父 未・母 済') && now.done === before.done)
+
+    // 2人が同時にチェックして、どちらも「進行中」で保存した場合
+    await page.evaluate(() => {
+      const key = 'couple-app-demo-db'
+      const db = JSON.parse(localStorage.getItem(key))
+      const path = 'households/main/tasks/t005'
+      db[path] = { ...db[path], status: 'doing', doneBy: { father: true, mother: true } }
+      localStorage.setItem(key, JSON.stringify(db))
+    })
+    await page.reload({ waitUntil: 'networkidle0' })
+    const raced = await page.evaluate(() => {
+      const li = [...document.querySelectorAll('li')].find((el) => el.textContent.includes('出生前検査'))
+      return li ? li.textContent : ''
+    })
+    check('両方：同時にチェックして保存値がずれても、2人そろっていれば完了と表示', raced.includes('父 済・母 済') && raced.includes('完了'))
+
+    // 編集シートでは「完了」を手で選べない
+    await clickBy(page, `${SHARED}」を編集`, { selector: 'button' })
+    const sheet = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open]')
+      const statusButtons = [...d.querySelectorAll('fieldset')]
+        .find((f) => f.querySelector('legend')?.textContent === 'ステータス')
+      return {
+        options: [...statusButtons.querySelectorAll('button')].map((b) => b.textContent),
+        text: d.innerText,
+      }
+    })
+    check('両方：編集シートのステータスに「完了」が無い', !sheet.options.includes('完了') && sheet.options.includes('該当なし'), sheet.options.join('・'))
+    check('両方：編集シートに自分と相手のチェック状況が出る', sheet.text.includes('自分（父）の分は完了した') && sheet.text.includes('相手（母）：チェック済み'))
+    await page.screenshot({ path: resolve(OUT, 'tasks-shared-edit.png') })
+    await clickBy(page, '閉じる', { selector: 'dialog[open] button' })
+    await page.screenshot({ path: resolve(OUT, 'tasks-shared.png') })
+  }
+
   // ---- 許可していないアカウント ----
   const dbBefore = await page.evaluate(() => localStorage.getItem('couple-app-demo-db'))
   for (const path of ['/', '/tasks', '/schedule', '/advice', '/records', '/settings']) {

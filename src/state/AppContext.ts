@@ -32,7 +32,10 @@ export type AppStatus =
   | 'ready'
 
 export type TaskPatch = Partial<
-  Pick<Task, 'phase' | 'category' | 'owner' | 'title' | 'dueDate' | 'status' | 'note' | 'deleted'>
+  Pick<
+    Task,
+    'phase' | 'category' | 'owner' | 'title' | 'dueDate' | 'status' | 'note' | 'deleted' | 'doneBy'
+  >
 >
 
 export type NewTask = Pick<Task, 'phase' | 'category' | 'owner' | 'title' | 'dueDate' | 'note'>
@@ -66,6 +69,8 @@ export interface AppActions {
   signOut(): Promise<void>
   setRole(role: Role): void
   updateTask(id: string, patch: TaskPatch, action: TaskAction): void
+  /** 担当が「両方」のタスクで、自分の完了チェックを付ける／外す。 */
+  setTaskCheck(task: Task, checked: boolean): void
   addTask(task: NewTask): void
   saveEvent(id: string | null, input: EventInput): void
   patchEvent(id: string, patch: { done?: boolean; deleted?: boolean }): void

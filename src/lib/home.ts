@@ -163,6 +163,12 @@ function actionText(task: Task): string {
       return 'を削除しました'
     case 'edit':
       return 'を編集しました'
+    case 'check':
+      return task.status === 'done'
+        ? 'を完了にしました（2人とも完了）'
+        : 'の自分の分を完了にしました'
+    case 'uncheck':
+      return 'の完了チェックを外しました'
     case 'status':
     default:
       break

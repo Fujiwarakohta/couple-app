@@ -14,6 +14,7 @@ import {
 import { todayYmd } from '../lib/dates'
 import { deletePhoto } from '../lib/photos'
 import { deadlineFor } from '../lib/receipts'
+import { checkWrite } from '../lib/sharedTask'
 import { newTaskId } from '../lib/tasks'
 import type {
   AdviceState,
@@ -231,10 +232,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [unconfigured, backend, user, denied, household])
 
   // 最新の値を actions から参照するための ref（actions を作り直さないため）
-  const ctx = useRef({ backend, user })
+  const myRole = user && household ? (household.members[user.uid]?.role ?? null) : null
+  const ctx = useRef({ backend, user, role: myRole })
   useEffect(() => {
-    ctx.current = { backend, user }
-  }, [backend, user])
+    ctx.current = { backend, user, role: myRole }
+  }, [backend, user, myRole])
 
   const actions: AppActions = useMemo(() => {
     const fail = (e: unknown) => {
@@ -297,6 +299,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         })
       },
 
+      setTaskCheck(task, checked) {
+        const c = current()
+        const role = ctx.current.role
+        if (!c || !role) return
+        const w = checkWrite(task, role, checked)
+        write({
+          path: `${paths.tasks}/${task.id}`,
+          data: { doneBy: w.doneBy, status: w.status, lastAction: w.action, ...stamp(c.uid) },
+          merge: true,
+        })
+      },
+
       addTask(task) {
         const c = current()
         if (!c) return
@@ -307,6 +321,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             ...task,
             dueHint: '',
             status: 'todo',
+            doneBy: { father: false, mother: false },
             deleted: false,
             createdBy: c.uid,
             lastAction: 'create',
