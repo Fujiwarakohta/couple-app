@@ -52,6 +52,37 @@ cp .env.local.example .env.local
 `.env.local` の `VITE_FIREBASE_*` に値を入れます（入力箇所は `.env.local.example` のコメントを参照）。
 `.env.local` は Git に入りません。
 
+### 2-2. Google ログイン用の設定（iPhone でのログインに必要）
+
+このアプリは、Google のログイン画面へ直接移動して戻ってくる方式でログインします。
+Firebase の中継ページを使う方式は、iPhone で
+「Unable to process request due to missing initial state」というエラーになることがあるためです。
+
+**(1) クライアント ID を控える**
+
+Firebase コンソール → Authentication → ログイン方法 → Google →「ウェブ SDK 構成」を開き、
+「ウェブ クライアント ID」を `.env.local` の `VITE_GOOGLE_CLIENT_ID` に書きます。
+
+**(2) 戻り先の URL を登録する**
+
+1. [Google Cloud コンソールの「認証情報」](https://console.cloud.google.com/apis/credentials) を開き、
+   画面上部で Firebase と同じプロジェクトを選ぶ。
+2. 「OAuth 2.0 クライアント ID」の一覧から、(1) と同じクライアント ID のもの
+   （名前は「Web client (auto created by Google Service)」）を開く。
+3. 「承認済みのリダイレクト URI」に次の2つを追加して保存する。末尾の `/` まで正確に入力する。
+
+```
+https://<GitHubのユーザー名>.github.io/couple-app/
+```
+
+```
+http://localhost:5173/
+```
+
+反映には数分かかることがあります。費用はかかりません。
+
+`VITE_GOOGLE_CLIENT_ID` を空のままにすると、別ウィンドウで開く方式だけになります。
+
 ### 3. 2人がログインして UID を控える
 
 ```bash
@@ -103,6 +134,7 @@ npx firebase-tools deploy --only firestore:rules --project <Firebaseのプロジ
    - `VITE_FIREBASE_PROJECT_ID`
    - `VITE_FIREBASE_APP_ID`
    - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_GOOGLE_CLIENT_ID`
 
    `VITE_ALLOWED_UIDS` は登録不要です（ルールの生成にだけ使います）。
 4. `main` に push すると、Actions がテスト → ビルド → Pages へのデプロイを行います。
@@ -118,8 +150,14 @@ npx firebase-tools deploy --only firestore:rules --project <Firebaseのプロジ
 - **iPhone（Safari）**：共有ボタン →「ホーム画面に追加」
 - **Android（Chrome）**：画面の案内、またはメニュー →「ホーム画面に追加」
 
-iPhone では、**先に Safari でログインを済ませてから**ホーム画面に追加してください。
-ホーム画面のアプリ内でログイン画面が開かない場合は、Safari で開いてログインし直します。
+**ログインできないとき**
+
+| 症状 | 対処 |
+|---|---|
+| LINE・メールなどのアプリの中で開いている | Google はアプリ内ブラウザでのログインを拒否します。Safari（または Chrome）で開き直す |
+| 「Error 400: redirect_uri_mismatch」 | 手順 2-2 の「承認済みのリダイレクト URI」が未登録、または末尾の `/` が違う |
+| 「missing initial state」 | `VITE_GOOGLE_CLIENT_ID` が未設定で、別ウィンドウ方式になっている。手順 2-2 を行う |
+| ホーム画面のアプリでログインできない | iPhone では、ホーム画面のアプリと Safari はログイン状態を共有しません。アプリ内でもう一度ログインする |
 
 ---
 

@@ -134,6 +134,11 @@ export function createLocalBackend(): Backend {
 
   return {
     kind: 'demo',
+    signInMethods: ['popup'],
+
+    async pendingSignInError() {
+      return null
+    },
 
     onAuthChange(cb) {
       authListeners.add(cb)

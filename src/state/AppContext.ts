@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { AuthUser } from '../lib/backend'
+import type { AuthUser, SignInMethod } from '../lib/backend'
 import type {
   AdviceState,
   FatherPlace,
@@ -62,7 +62,7 @@ export interface AppData {
 }
 
 export interface AppActions {
-  signIn(): Promise<void>
+  signIn(method?: SignInMethod): Promise<void>
   signOut(): Promise<void>
   setRole(role: Role): void
   updateTask(id: string, patch: TaskPatch, action: TaskAction): void
@@ -82,6 +82,8 @@ export interface AppActions {
 export interface AppContextValue {
   status: AppStatus
   isDemo: boolean
+  /** 使えるログイン方式。先頭が既定。 */
+  signInMethods: readonly SignInMethod[]
   user: AuthUser | null
   role: Role | null
   partnerUid: string | null

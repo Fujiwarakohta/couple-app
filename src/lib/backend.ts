@@ -29,10 +29,21 @@ export interface WriteOp {
   merge?: boolean
 }
 
+/**
+ * ログインの方式。
+ * - redirect: Google の画面へ移動して戻ってくる（iPhone でも安定する。既定）
+ * - popup: 別ウィンドウで開く（Firebase の中継ページを使う）
+ */
+export type SignInMethod = 'redirect' | 'popup'
+
 export interface Backend {
   readonly kind: 'firestore' | 'demo'
+  /** 使えるログイン方式。先頭が既定。 */
+  readonly signInMethods: readonly SignInMethod[]
   onAuthChange(cb: (user: AuthUser | null) => void): Unsub
-  signIn(): Promise<void>
+  signIn(method?: SignInMethod): Promise<void>
+  /** Google から戻ってきた直後のログインで起きたエラー（無ければ null）。 */
+  pendingSignInError(): Promise<string | null>
   signOut(): Promise<void>
   watchDoc(path: string, cb: (data: DocData | null) => void, onError: (e: BackendError) => void): Unsub
   watchCollection(
@@ -62,6 +73,8 @@ export interface FirebaseEnv {
   projectId: string
   appId: string
   messagingSenderId: string
+  /** Google の OAuth クライアント ID。空ならポップアップ方式だけを使う。 */
+  googleClientId: string
 }
 
 /** .env.local の値を読む。必須の値が欠けていれば null。 */
@@ -78,6 +91,7 @@ export function readFirebaseEnv(): FirebaseEnv | null {
     projectId,
     appId,
     messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID ?? '',
+    googleClientId: (env.VITE_GOOGLE_CLIENT_ID ?? '').trim(),
   }
 }
 

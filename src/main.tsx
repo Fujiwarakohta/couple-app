@@ -4,7 +4,11 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
 import { loadBackend } from './lib/backend'
+import { takeCallback } from './lib/googleRedirect'
 import { AppProvider } from './state/AppProvider'
+
+// Google のログインから戻ってきた直後なら、URL に付いた ID トークンを受け取って URL から消す
+takeCallback()
 
 // 画面の描画と並行して、保存先（Firebase）の読み込みを始めておく
 void loadBackend().catch(() => undefined)

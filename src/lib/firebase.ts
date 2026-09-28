@@ -6,11 +6,13 @@ import {
   indexedDBLocalPersistence,
   initializeAuth,
   onAuthStateChanged,
+  signInWithCredential,
   signInWithPopup,
   signOut,
 } from 'firebase/auth'
-import type { Backend, BackendError, FirebaseEnv, Unsub } from './backend'
+import type { Backend, BackendError, FirebaseEnv, SignInMethod, Unsub } from './backend'
 import type { Store } from './firestoreStore'
+import { redirectErrorMessage, startRedirect, takeCallback } from './googleRedirect'
 
 /**
  * Firebase の初期化、Google ログイン、Firestore（永続キャッシュつき）。
@@ -66,17 +68,44 @@ export function createFirebaseBackend(env: FirebaseEnv): Backend {
     messagingSenderId: env.messagingSenderId,
   })
 
-  // popupRedirectResolver を初期化時に渡すと、スマホではログイン用の iframe を先に読み込む。
-  // 表示は少し重くなるが、ボタンを押してからポップアップが開くまでに通信を挟まないので、
-  // iPhone の Safari でポップアップがブロックされにくい。ログインの確実さを優先する。
+  // 既定のログインは「Google へ移動して戻る」方式（googleRedirect.ts）。
+  // Firebase の中継ページを使うポップアップ方式は、iPhone で
+  // 「missing initial state」になることがあるため、予備として残している。
+  const canRedirect = env.googleClientId !== ''
+  const signInMethods: SignInMethod[] = canRedirect ? ['redirect', 'popup'] : ['popup']
+
   const auth = initializeAuth(app, {
     persistence: [indexedDBLocalPersistence, browserLocalPersistence],
-    popupRedirectResolver: browserPopupRedirectResolver,
+    // ポップアップ方式しか使えないときは、ログイン用の iframe を先に読み込んでおく
+    // （ボタンを押してから通信を挟むと、ポップアップがブロックされやすいため）。
+    ...(canRedirect ? {} : { popupRedirectResolver: browserPopupRedirectResolver }),
   })
 
   // Authentication は Google プロバイダのみ。
   const provider = new GoogleAuthProvider()
   provider.setCustomParameters({ prompt: 'select_account' })
+
+  // Google から戻ってきた直後なら、受け取った ID トークンでログインする
+  const callback = takeCallback()
+  let signInError: string | null = null
+  const redirectDone: Promise<void> = (async () => {
+    if (callback.kind === 'error') {
+      signInError = redirectErrorMessage(callback.code)
+      return
+    }
+    if (callback.kind !== 'token') return
+    try {
+      await signInWithCredential(auth, GoogleAuthProvider.credential(callback.idToken))
+    } catch (e) {
+      const code = (e as { code?: string })?.code ?? ''
+      signInError =
+        code === 'auth/network-request-failed'
+          ? '通信できませんでした。電波の良い場所でもう一度ログインしてください。'
+          : code === 'auth/invalid-credential'
+            ? 'Google のクライアント ID が Firebase のプロジェクトと一致しません。設定を確認してください。'
+            : 'ログインできませんでした。もう一度お試しください。'
+    }
+  })()
 
   let storePromise: Promise<Store> | null = null
   const store = (): Promise<Store> => {
@@ -113,17 +142,44 @@ export function createFirebaseBackend(env: FirebaseEnv): Backend {
 
   return {
     kind: 'firestore',
+    signInMethods,
 
     onAuthChange(cb) {
-      return onAuthStateChanged(auth, (user) => {
-        writeHint(!!user)
-        if (user) void store().catch(() => undefined)
-        cb(user ? { uid: user.uid, displayName: user.displayName, email: user.email } : null)
+      let active = true
+      const unsub = onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          // 戻ってきた直後のログインが終わるまでは「未ログイン」と伝えない
+          void redirectDone.then(() => {
+            if (!active || auth.currentUser) return
+            writeHint(false)
+            cb(null)
+          })
+          return
+        }
+        writeHint(true)
+        void store().catch(() => undefined)
+        cb({ uid: user.uid, displayName: user.displayName, email: user.email })
       })
+      return () => {
+        active = false
+        unsub()
+      }
     },
 
-    async signIn() {
-      await signInWithPopup(auth, provider)
+    async signIn(method) {
+      const chosen = method && signInMethods.includes(method) ? method : signInMethods[0]
+      if (chosen === 'redirect') {
+        startRedirect(env.googleClientId)
+        // 画面が切り替わるまで待つ（この Promise は解決しない）
+        await new Promise<void>(() => undefined)
+        return
+      }
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver)
+    },
+
+    async pendingSignInError() {
+      await redirectDone
+      return signInError
     },
 
     async signOut() {

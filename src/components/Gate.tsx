@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { ROLE_LABEL } from '../data/labels'
+import type { SignInMethod } from '../lib/backend'
 import { useApp } from '../state/AppContext'
 import type { Role } from '../types'
 
@@ -72,20 +73,47 @@ export function UnconfiguredScreen() {
 }
 
 export function SignInScreen() {
-  const { actions } = useApp()
+  const { actions, signInMethods } = useApp()
   const [busy, setBusy] = useState(false)
-  const signIn = async () => {
+  const signIn = async (method?: SignInMethod) => {
     setBusy(true)
-    await actions.signIn()
+    await actions.signIn(method)
     setBusy(false)
   }
+  const hasFallback = signInMethods.length > 1
   return (
     <Centered title="ふたりノート">
       <p className="text-[15px]">{APP_LEAD}</p>
-      <button type="button" className="btn btn-primary w-full" onClick={signIn} disabled={busy}>
+      <button
+        type="button"
+        className="btn btn-primary w-full"
+        onClick={() => void signIn(signInMethods[0])}
+        disabled={busy}
+      >
         {busy ? 'ログイン中…' : 'Google でログイン'}
       </button>
       <p className="muted text-xs">許可された2つの Google アカウントだけが利用できます。</p>
+      {hasFallback && (
+        <details className="text-sm">
+          <summary className="flex min-h-11 cursor-pointer items-center underline">
+            ログインできないとき
+          </summary>
+          <div className="space-y-3 pt-1">
+            <p className="muted text-sm">
+              LINE やメールなどのアプリの中で開いている場合は、Safari（または Chrome）で開き直してください。
+              それでもログインできない場合は、別の方式を試せます。
+            </p>
+            <button
+              type="button"
+              className="btn btn-ghost w-full"
+              onClick={() => void signIn('popup')}
+              disabled={busy}
+            >
+              別ウィンドウでログイン
+            </button>
+          </div>
+        </details>
+      )}
     </Centered>
   )
 }

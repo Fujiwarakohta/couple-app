@@ -114,8 +114,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loadBackend()
       .then((b) => {
         if (cancelled) return
-        if (b) setBackend(b)
-        else setUnconfigured(true)
+        if (!b) {
+          setUnconfigured(true)
+          return
+        }
+        setBackend(b)
+        // Google から戻ってきた直後のログインで失敗していれば、理由を表示する
+        void b.pendingSignInError().then((message) => {
+          if (!cancelled && message) setError(message)
+        })
       })
       .catch(() => {
         if (cancelled) return
@@ -249,12 +256,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const stamp = (uidValue: string) => ({ updatedAt: SERVER_TIME, updatedBy: uidValue })
 
     return {
-      async signIn() {
+      async signIn(method) {
         const b = ctx.current.backend
         if (!b) return
         try {
           setError(null)
-          await b.signIn()
+          await b.signIn(method)
         } catch (e) {
           setError(signInErrorMessage(e))
         }
@@ -419,6 +426,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return {
       status,
       isDemo: isDemoMode(),
+      signInMethods: backend?.signInMethods ?? [],
       user: user ?? null,
       role,
       partnerUid,
@@ -427,7 +435,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       today,
       actions,
     }
-  }, [status, user, household, data, error, today, actions])
+  }, [status, backend, user, household, data, error, today, actions])
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
