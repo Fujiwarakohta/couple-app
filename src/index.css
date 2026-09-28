@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+
+@theme {
+  /* システムフォントのみ。Web フォントは読み込まない。 */
+  --font-sans: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI',
+    'Yu Gothic', Meiryo, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    color-scheme: light dark;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    overscroll-behavior-y: none;
+  }
+
+  /* フォーカスを必ず見えるようにする */
+  :focus-visible {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :focus-visible {
+      outline-color: #93c5fd;
+    }
+  }
+
+  button,
+  a,
+  summary,
+  label {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.55);
+  }
+
+  /* 装飾のアニメーションは入れない。動きを減らす設定も尊重する。 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* タップ領域は最小 44px */
+  .btn {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg px-4 text-[15px] leading-tight font-semibold;
+  }
+
+  .btn-primary {
+    @apply bg-neutral-900 text-white disabled:bg-neutral-300 disabled:text-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:disabled:bg-neutral-700 dark:disabled:text-neutral-300;
+  }
+
+  .btn-ghost {
+    @apply border border-neutral-500 bg-white text-neutral-900 dark:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-100;
+  }
+
+  .btn-danger {
+    @apply border border-red-700 bg-white text-red-800 dark:border-red-400 dark:bg-neutral-800 dark:text-red-300;
+  }
+
+  .input {
+    @apply block min-h-11 w-full rounded-lg border border-neutral-500 bg-white px-3 py-2 text-base text-neutral-900 dark:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-100;
+  }
+
+  .card {
+    @apply rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800;
+  }
+
+  .chip {
+    @apply inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-neutral-500 bg-white px-4 text-sm font-medium text-neutral-900 dark:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-100;
+  }
+
+  .chip[aria-pressed='true'],
+  .chip[aria-checked='true'] {
+    @apply border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900;
+  }
+
+  .badge {
+    @apply inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-xs leading-tight font-semibold;
+  }
+
+  .muted {
+    @apply text-neutral-700 dark:text-neutral-300;
+  }
+
+  .section-title {
+    @apply text-base font-bold;
+  }
+
+  .field-label {
+    @apply mb-1 block text-sm font-semibold;
+  }
+
+  /* 期限警告（アクセントは赤の1色） */
+  .alert {
+    @apply rounded-xl border border-red-700 bg-red-50 p-4 text-red-900 dark:border-red-400 dark:bg-red-950 dark:text-red-100;
+  }
+}

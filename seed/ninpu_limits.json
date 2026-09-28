@@ -1,0 +1,26 @@
+{
+ "_comment": "妊婦健診の助成上限額（里帰り先の償還払い）。受診票番号ごとの石垣市上限額。数値はアプリ側で加工しない。",
+ "source": "利用者提供（2026-09-28 受領）。石垣市の妊婦健診 償還払い 上限額表",
+ "tickets": [
+  { "ticketNo": "1", "label": "1回目", "limitYen": 24460 },
+  { "ticketNo": "2", "label": "2回目", "limitYen": 8970 },
+  { "ticketNo": "3", "label": "3回目", "limitYen": 10940 },
+  { "ticketNo": "4", "label": "4回目", "limitYen": 10830 },
+  { "ticketNo": "5", "label": "5回目", "limitYen": 17630 },
+  { "ticketNo": "9-1", "label": "9-1", "limitYen": 5490 },
+  { "ticketNo": "9-2", "label": "9-2", "limitYen": 10270 },
+  { "ticketNo": "9-3", "label": "9-3", "limitYen": 5490 },
+  { "ticketNo": "9-4", "label": "9-4", "limitYen": 9870 },
+  { "ticketNo": "9-5", "label": "9-5", "limitYen": 5490 },
+  { "ticketNo": "9-6", "label": "9-6", "limitYen": 9870 },
+  { "ticketNo": "9-7", "label": "9-7", "limitYen": 5490 },
+  { "ticketNo": "9-8", "label": "9-8", "limitYen": 5090 },
+  { "ticketNo": "9-9", "label": "9-9", "limitYen": 5090 }
+ ],
+ "antibodyTests": [
+  { "ticketNo": "ab-hiv-rubella-chlamydia", "label": "抗体検査：HIV／風疹／クラミジア", "limitYen": 6180 },
+  { "ticketNo": "ab-htlv1", "label": "抗体検査：HTLV-1", "limitYen": 3030 }
+ ],
+ "usageNote": "1回目は初診時のみ使用可、2〜5回目は使える週数が決まっています（9-1〜9-9は使用順・期限なし）。",
+ "applicationNote": "申請には、石垣市の申請書、受診票1枚目（受診日・病院名・医師名・押印あり）、領収書原本（明細書があれば併せて）、通帳の写しが必要です。"
+}

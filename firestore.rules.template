@@ -1,0 +1,33 @@
+// Firestore セキュリティルールの雛形。
+// このファイルは直接デプロイしない。
+// .env.local の VITE_ALLOWED_UIDS（父・母の UID）を記入してから「npm run rules」を実行すると、
+// __ALLOWED_UIDS__ が置き換えられた firestore.rules が生成される。
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 許可した2つの Google アカウントの UID のみ。
+    // 新しいユーザーが Google ログインしても、ここに UID が無ければ何も読めず、何も書けない。
+    function isAllowed() {
+      return request.auth != null
+        && request.auth.uid in [__ALLOWED_UIDS__];
+    }
+
+    // 世帯のドキュメント（settings / members）
+    match /households/main {
+      allow read, write: if isAllowed();
+    }
+
+    // 世帯の下のすべてのコレクション
+    // （tasks / events / presence / records / receipts / adviceState）
+    match /households/main/{document=**} {
+      allow read, write: if isAllowed();
+    }
+
+    // 上記以外はすべて拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

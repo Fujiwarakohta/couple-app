@@ -1,0 +1,3 @@
+# 改行は LF に統一する（seed のファイルを元の内容のまま保つため）
+* text=auto eol=lf
+*.png binary

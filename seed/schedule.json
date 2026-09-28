@@ -1,0 +1,374 @@
+{
+ "_comment": "基準日は出産予定日。日付は EDD からの相対日数(offsetDays)で保持し、アプリ側で EDD 変更時に再計算する。fixed:true の項目は絶対日付。",
+ "edd": "2027-05-24",
+ "lmp": "2026-08-17",
+ "events": [
+  {
+   "id": "e01",
+   "title": "妊娠届・親子健康手帳交付・支援給付金(1回目)面談",
+   "offsetDays": -197,
+   "window": 14,
+   "owner": "母",
+   "place": "石垣市健康福祉センター",
+   "type": "admin"
+  },
+  {
+   "id": "e02",
+   "title": "松南病院へ電話（里帰り意向・無痛分娩希望・初診予約方法）",
+   "offsetDays": -196,
+   "window": 7,
+   "owner": "母",
+   "place": "恵愛会松南病院",
+   "type": "medical"
+  },
+  {
+   "id": "e03",
+   "title": "12週健診(初期検査結果)",
+   "offsetDays": -196,
+   "window": 7,
+   "owner": "両",
+   "place": "石垣",
+   "type": "medical",
+   "fatherAttend": true
+  },
+  {
+   "id": "e04",
+   "title": "インフルエンザワクチン",
+   "offsetDays": -190,
+   "window": 30,
+   "owner": "母",
+   "place": "石垣",
+   "type": "medical"
+  },
+  {
+   "id": "e05",
+   "title": "両親学級(石垣市・第1〜4水曜)",
+   "offsetDays": -150,
+   "window": 60,
+   "owner": "両",
+   "place": "石垣市健康福祉センター",
+   "type": "class"
+  },
+  {
+   "id": "e06",
+   "title": "家計CF試算・里帰り費用予算化 完了",
+   "offsetDays": -145,
+   "window": 0,
+   "owner": "両",
+   "type": "money"
+  },
+  {
+   "id": "e07",
+   "title": "20週 詳細エコー",
+   "offsetDays": -140,
+   "window": 7,
+   "owner": "両",
+   "place": "石垣",
+   "type": "medical",
+   "fatherAttend": true
+  },
+  {
+   "id": "e08",
+   "title": "学資保険 加入可能開始(EDD140日前)",
+   "offsetDays": -140,
+   "window": 0,
+   "owner": "両",
+   "type": "money"
+  },
+  {
+   "id": "e09",
+   "title": "24〜28週 妊娠糖尿病スクリーニング・貧血検査",
+   "offsetDays": -105,
+   "window": 28,
+   "owner": "母",
+   "place": "石垣",
+   "type": "medical"
+  },
+  {
+   "id": "e10",
+   "title": "RSウイルスワクチン検討(24〜36週)",
+   "offsetDays": -105,
+   "window": 84,
+   "owner": "母",
+   "type": "medical"
+  },
+  {
+   "id": "e11",
+   "title": "帰省の航空券予約(GW前・変更可運賃)",
+   "offsetDays": -100,
+   "window": 14,
+   "owner": "両",
+   "type": "travel"
+  },
+  {
+   "id": "e12",
+   "title": "産休・育休申請書類 提出期限(会社規程)",
+   "offsetDays": -54,
+   "window": 0,
+   "owner": "母",
+   "type": "work"
+  },
+  {
+   "id": "e13",
+   "title": "支援給付金(2回目)面談・申請",
+   "offsetDays": -80,
+   "window": 30,
+   "owner": "母",
+   "place": "石垣市健康福祉センター",
+   "type": "admin"
+  },
+  {
+   "id": "e14",
+   "title": "28週健診",
+   "offsetDays": -84,
+   "window": 7,
+   "owner": "両",
+   "place": "石垣",
+   "type": "medical",
+   "fatherAttend": true
+  },
+  {
+   "id": "e15",
+   "title": "八重山病院から松南病院宛の紹介状・検査結果を受領。松南病院の初診を電話予約",
+   "offsetDays": -70,
+   "window": 21,
+   "owner": "母",
+   "place": "八重山病院",
+   "type": "medical"
+  },
+  {
+   "id": "e16",
+   "title": "島外出張なし 開始(32週)",
+   "offsetDays": -56,
+   "window": 0,
+   "owner": "父",
+   "type": "work"
+  },
+  {
+   "id": "e17",
+   "title": "産前休業 開始(34週0日)",
+   "offsetDays": -42,
+   "window": 0,
+   "owner": "母",
+   "type": "work"
+  },
+  {
+   "id": "e18",
+   "title": "帰省(石垣→石川)・父同行（33〜34週）",
+   "offsetDays": -49,
+   "window": 13,
+   "owner": "両",
+   "type": "travel"
+  },
+  {
+   "id": "e19",
+   "title": "航空搭乗 診断書ライン(EDD28日前)",
+   "offsetDays": -28,
+   "window": 0,
+   "owner": "母",
+   "type": "travel"
+  },
+  {
+   "id": "e20",
+   "title": "松南病院 初診（34週頃まで・紹介状/手帳/保険証）",
+   "offsetDays": -42,
+   "window": 0,
+   "owner": "母",
+   "place": "恵愛会松南病院",
+   "type": "medical",
+   "critical": true
+  },
+  {
+   "id": "e21",
+   "title": "父 石川入り(37週〜EDD10日前の間で確定)",
+   "offsetDays": -21,
+   "window": 11,
+   "owner": "父",
+   "type": "travel"
+  },
+  {
+   "id": "e22",
+   "title": "正期産 開始(37週)",
+   "offsetDays": -21,
+   "window": 0,
+   "owner": "両",
+   "type": "medical"
+  },
+  {
+   "id": "e23",
+   "title": "出産予定日",
+   "offsetDays": 0,
+   "window": 0,
+   "owner": "両",
+   "type": "milestone"
+  },
+  {
+   "id": "e24",
+   "title": "出生届 期限(出生後14日)",
+   "offsetDays": 14,
+   "window": 0,
+   "owner": "両",
+   "place": "白山市役所",
+   "type": "admin",
+   "critical": true
+  },
+  {
+   "id": "e25",
+   "title": "児童手当 認定請求 期限（父が石垣市役所 or マイナポータル）",
+   "offsetDays": 15,
+   "window": 0,
+   "owner": "父",
+   "place": "石垣市",
+   "type": "admin",
+   "critical": true
+  },
+  {
+   "id": "e26",
+   "title": "産婦健診 1回目(産後2週)",
+   "offsetDays": 14,
+   "window": 5,
+   "owner": "母",
+   "place": "松南病院",
+   "type": "medical"
+  },
+  {
+   "id": "e27",
+   "title": "子の健保加入 目安(30日)",
+   "offsetDays": 30,
+   "window": 0,
+   "owner": "父",
+   "type": "admin"
+  },
+  {
+   "id": "e28",
+   "title": "1か月健診・産婦健診2回目・帰島可否判断",
+   "offsetDays": 30,
+   "window": 5,
+   "owner": "両",
+   "place": "松南病院",
+   "type": "medical"
+  },
+  {
+   "id": "e29",
+   "title": "帰島(仮置き:産後1〜2か月)",
+   "offsetDays": 45,
+   "window": 15,
+   "owner": "両",
+   "type": "travel"
+  },
+  {
+   "id": "e30",
+   "title": "産後休業 終了・育休開始",
+   "offsetDays": 56,
+   "window": 0,
+   "owner": "母",
+   "type": "work"
+  },
+  {
+   "id": "e31",
+   "title": "予防接種 開始(生後2か月)",
+   "offsetDays": 61,
+   "window": 0,
+   "owner": "両",
+   "type": "medical"
+  },
+  {
+   "id": "e32",
+   "title": "3〜4か月健診(石垣市)",
+   "offsetDays": 105,
+   "window": 30,
+   "owner": "両",
+   "place": "石垣市",
+   "type": "medical"
+  },
+  {
+   "id": "e33",
+   "title": "新生児訪問(生後4か月以内)",
+   "offsetDays": 120,
+   "window": 0,
+   "owner": "両",
+   "place": "石垣",
+   "type": "admin"
+  },
+  {
+   "id": "e34",
+   "title": "保育園 申込(2028年4月入園)",
+   "offsetDays": 150,
+   "window": 60,
+   "owner": "両",
+   "place": "石垣市",
+   "type": "admin"
+  },
+  {
+   "id": "e35",
+   "title": "育休給付 67%→50% 切替(育休開始180日)",
+   "offsetDays": 236,
+   "window": 0,
+   "owner": "母",
+   "type": "money"
+  },
+  {
+   "id": "e36",
+   "title": "1歳到達・育休延長判断",
+   "offsetDays": 365,
+   "window": 0,
+   "owner": "母",
+   "type": "work"
+  },
+  {
+   "id": "e37",
+   "title": "妊婦健診・産婦健診 償還払い 申請期限(最終受診日から1年)",
+   "offsetDays": 395,
+   "window": 0,
+   "owner": "母",
+   "place": "石垣市健康福祉センター",
+   "type": "admin",
+   "critical": true
+  },
+  {
+   "id": "e38",
+   "title": "予防接種依頼申請書 提出期限（石川で接種する場合、接種1か月前）",
+   "offsetDays": 31,
+   "window": 0,
+   "owner": "両",
+   "place": "石垣市健康福祉センター",
+   "type": "admin",
+   "critical": true
+  },
+  {
+   "id": "e39",
+   "title": "新生児聴覚検査（入院中）",
+   "offsetDays": 3,
+   "window": 3,
+   "owner": "両",
+   "place": "松南病院",
+   "type": "medical"
+  },
+  {
+   "id": "e40",
+   "title": "予防接種費用 償還払い期限（接種後6か月）",
+   "offsetDays": 244,
+   "window": 0,
+   "owner": "両",
+   "place": "石垣市健康福祉センター",
+   "type": "admin",
+   "critical": true
+  },
+  {
+   "id": "e41",
+   "title": "プレママ優待 登録（アカチャンホンポ/西松屋/Amazon/楽天/ピジョン等）",
+   "offsetDays": -190,
+   "window": 30,
+   "owner": "両",
+   "type": "prep"
+  },
+  {
+   "id": "e42",
+   "title": "石川テレビ はじめてばこ 応募期限（生後6か月）",
+   "offsetDays": 183,
+   "window": 0,
+   "owner": "両",
+   "type": "prep"
+  }
+ ]
+}
