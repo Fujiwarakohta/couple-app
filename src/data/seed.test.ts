@@ -3,15 +3,84 @@ import ninpu from '../../seed/ninpu_limits.json'
 import schedule from '../../seed/schedule.json'
 import tasks from '../../seed/tasks.json'
 import { buildSeedOps, paths } from './seed'
-import { ADVICE, NINPU_LIMITS, PHASES, ninpuLimitYen } from './static'
+import advice from '../../seed/advice.json'
+import {
+  ADVICE,
+  GUIDE_ADVICE,
+  NINPU_LIMITS,
+  PHASES,
+  SEED_ADVICE,
+  ninpuLimitYen,
+} from './static'
 import type { SeedSchedule, SeedTask } from './seed'
 
 describe('seed の件数', () => {
   it('tasks 173 / events 42 / advice 33 / phases 9', () => {
     expect(tasks).toHaveLength(173)
     expect(schedule.events).toHaveLength(42)
-    expect(ADVICE).toHaveLength(33)
+    expect(SEED_ADVICE).toHaveLength(33)
     expect(PHASES).toHaveLength(9)
+  })
+})
+
+describe('追加したアドバイス（advice_guide.json）', () => {
+  it('元の advice.json の33件は、内容も順序もそのまま', () => {
+    expect(SEED_ADVICE).toEqual(advice.items)
+    expect(ADVICE.slice(0, 33)).toEqual(advice.items)
+  })
+
+  it('25件を追加し、元の項目の後ろに並べる', () => {
+    expect(GUIDE_ADVICE).toHaveLength(25)
+    expect(ADVICE).toHaveLength(33 + 25)
+    expect(ADVICE.slice(33)).toEqual(GUIDE_ADVICE)
+  })
+
+  it('ID が重複しない', () => {
+    const ids = ADVICE.map((a) => a.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('すべての項目に出典・本文・タグ・週数がある', () => {
+    for (const a of GUIDE_ADVICE) {
+      expect(a.source, a.id).toContain('調査報告書')
+      expect(a.title.length, a.id).toBeGreaterThan(0)
+      expect(a.body.length, a.id).toBeGreaterThan(0)
+      expect(a.tags.length, a.id).toBeGreaterThan(0)
+      expect(a.weeks[0], a.id).toBeLessThanOrEqual(a.weeks[1])
+    }
+  })
+
+  it('数値は報告書の値のまま', () => {
+    const body = (id: string) => GUIDE_ADVICE.find((a) => a.id === id)?.body ?? ''
+    expect(body('g01')).toContain('400μg')
+    expect(body('g01')).toContain('1,000μg/日')
+    expect(body('g02')).toContain('+50kcal/日')
+    expect(body('g02')).toContain('+250kcal/日')
+    expect(body('g02')).toContain('+450kcal/日')
+    expect(body('g09')).toContain('+2.0mg/日')
+    expect(body('g10')).toContain('9.0μg/日')
+    expect(body('g11')).toContain('約20倍')
+    expect(body('g13')).toContain('0.4〜1%')
+    expect(body('g13')).toContain('15〜20秒')
+    expect(body('g14')).toContain('2,000μg/日')
+    expect(body('g21')).toContain('玉露160mg')
+    expect(body('g21')).toContain('コーヒー60mg')
+    expect(body('g23')).toContain('16週未満')
+    expect(body('g24')).toContain('28週0日から36週6日')
+  })
+
+  it('既存の項目と記載が異なるものは、未確認として理由を持つ', () => {
+    const verify = (id: string) => GUIDE_ADVICE.find((a) => a.id === id)?.verify ?? ''
+    expect(verify('g21')).toContain('既存の項目')
+    expect(verify('g24')).toContain('既存の項目')
+    expect(verify('g14')).toContain('既存の項目')
+  })
+
+  it('公的機関・学会の資料が出典にない項目は、未確認にしている', () => {
+    const official = /厚生労働省|食品安全委員会|こども家庭庁|学会|医会|コンセンサスガイド/
+    for (const a of GUIDE_ADVICE) {
+      if (!official.test(a.source)) expect(a.verify, a.id).toBeTruthy()
+    }
   })
 })
 

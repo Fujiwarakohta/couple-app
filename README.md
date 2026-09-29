@@ -248,6 +248,9 @@ npx firebase-tools deploy --only firestore:rules --project <Firebaseのプロジ
 
 - `seed/` の4ファイルは書き換えていません。金額・期限・週数は seed の値をそのまま表示します。
 - `seed/ninpu_limits.json`（妊婦健診の受診票ごとの上限額）は、利用者から受領した値を追加したものです。
+- `seed/advice_guide.json` は、調査報告書「妊娠期の健康と栄養ガイド」から追加したアドバイス25件です。
+  元の `advice.json` は変更していません。公的機関・学会の資料で照合できていない項目と、
+  既存の項目と記載が異なる項目には `verify`（未確認の内容）を付けています。
 - 数値を更新するときは、seed ファイルを修正し、出典を併記してください。
 - 資料で「要確認」の項目には「未確認」の表示を付けています（[src/data/unconfirmed.ts](src/data/unconfirmed.ts)）。
   確認が済んだら、その一覧から外してください。

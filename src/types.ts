@@ -175,4 +175,6 @@ export interface AdviceItem {
   title: string
   body: string
   source: string
+  /** 未確認の内容（あれば画面に「未確認」と表示する）。追加したアドバイスで使う。 */
+  verify?: string
 }

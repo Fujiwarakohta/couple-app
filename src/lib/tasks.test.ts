@@ -93,7 +93,13 @@ describe('未確認の表示', () => {
   it('本文に「要確認」とあれば未確認になる', () => {
     expect(taskUnconfirmed('u1', '費用は要確認')).not.toBeNull()
     expect(taskUnconfirmed('u1', '葉酸サプリを続ける')).toBeNull()
-    expect(adviceUnconfirmed('x', '本文', '各航空会社 搭乗条件(要確認)')).not.toBeNull()
+    expect(
+      adviceUnconfirmed({ id: 'x', body: '本文', source: '各航空会社 搭乗条件(要確認)' }),
+    ).not.toBeNull()
+    expect(adviceUnconfirmed({ id: 'x', body: '本文', source: '出典' })).toBeNull()
+    expect(adviceUnconfirmed({ id: 'x', body: '本文', source: '出典', verify: '理由' })).toEqual({
+      reason: '理由',
+    })
   })
 })
 

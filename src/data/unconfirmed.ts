@@ -11,7 +11,8 @@ export interface UnconfirmedInfo {
 /** 指示書 付録の5項目と、seed 本文に「要確認」と明記されている項目。 */
 const TASKS: Record<string, string> = {
   t042: '石垣市の妊婦歯科健診の有無・条件',
-  t057: 'RSウイルスワクチンの費用',
+  t057:
+    'RSウイルスワクチンの費用。2026年度から定期接種（対象は28週0日〜36週6日）になっており、このタスクの「任意接種・24〜36週」とは異なる',
   t058: '無痛分娩の追加費用（調査報告書では10万円〜税別。公式未確認）',
   t059: '離島通院費助成が里帰り（県外）出産に適用されるか',
   t125: 'こども医療費（県外受診分）の申請期限2年',
@@ -20,7 +21,8 @@ const TASKS: Record<string, string> = {
 
 const ADVICE: Record<string, string> = {
   a13: '石垣市の妊婦歯科健診の有無',
-  a15: 'RSウイルスワクチンの費用・接種可否',
+  a15:
+    'RSウイルスワクチンの費用・接種可否。2026年度から定期接種（対象は28週0日〜36週6日）になっており、この項目の「任意・24〜36週」とは異なる',
   a18: '航空会社ごとの搭乗条件',
   a26: '航空会社ごとの搭乗条件',
   a30: '無痛分娩の追加費用（調査報告書では10万円〜税別。公式未確認）',
@@ -36,9 +38,18 @@ export function taskUnconfirmed(id: string, title: string): UnconfirmedInfo | nu
   return null
 }
 
-export function adviceUnconfirmed(id: string, body: string, source: string): UnconfirmedInfo | null {
-  if (ADVICE[id]) return { reason: ADVICE[id] }
-  if (MARKER.test(body) || MARKER.test(source)) return { reason: '本文に「要確認」の記載あり' }
+export function adviceUnconfirmed(item: {
+  id: string
+  body: string
+  source: string
+  verify?: string
+}): UnconfirmedInfo | null {
+  if (ADVICE[item.id]) return { reason: ADVICE[item.id] }
+  // 追加したアドバイス（advice_guide.json）は、未確認の内容を項目ごとに持っている
+  if (item.verify) return { reason: item.verify }
+  if (MARKER.test(item.body) || MARKER.test(item.source)) {
+    return { reason: '本文に「要確認」の記載あり' }
+  }
   return null
 }
 

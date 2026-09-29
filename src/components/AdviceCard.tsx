@@ -23,7 +23,7 @@ interface AdviceCardProps {
 export function AdviceCard({ item, state, onChange, heading: Heading = 'h3' }: AdviceCardProps) {
   const read = state.read.includes(item.id)
   const pinned = state.pinned.includes(item.id)
-  const unconfirmed = adviceUnconfirmed(item.id, item.body, item.source)
+  const unconfirmed = adviceUnconfirmed(item)
 
   return (
     <article className="card">
