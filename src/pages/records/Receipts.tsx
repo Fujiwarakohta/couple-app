@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PlusIcon } from '../../components/Icons'
 import { Sheet } from '../../components/Sheet'
-import { Check, EmptyText, Field, UnconfirmedBadge, UnconfirmedNote } from '../../components/ui'
+import { Check, EmptyText, Field, UnconfirmedBadge } from '../../components/ui'
 import {
   NINPU_APPLICATION_NOTE,
   NINPU_LIMITS,
@@ -280,7 +280,13 @@ function ReceiptForm({
         </select>
       </Field>
       {kind === 'hearing' && (
-        <UnconfirmedNote reason="石垣市の助成は上限3,500円・原則1回（調査報告書の記載）。要件は窓口未確認" />
+        <p className="rounded-lg border border-neutral-400 p-3 text-sm">
+          石垣市の助成は上限3,500円・1回（再検査になった場合は確認検査を含めて2回）。
+          市外で受けた場合は償還払いで、期限は検査日から1年間。
+          <span className="muted block text-xs">
+            出典：石垣市 新生児聴覚検査費助成（2026-09-29 確認）
+          </span>
+        </p>
       )}
       <Field label={kind === 'vaccine' ? '接種日' : '受診日'} htmlFor="rc-date">
         <input id="rc-date" type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} required />
@@ -483,7 +489,6 @@ export function Receipts() {
           <h2 className="flex flex-wrap items-center gap-1.5 rounded bg-neutral-200 px-2 py-1 text-sm font-bold dark:bg-neutral-700">
             {RECEIPT_KIND_LABEL[g.kind]}
             <span className="muted text-xs font-normal">{g.items.length}件</span>
-            {(g.kind === 'hearing' || g.kind === 'kodomo_iryo') && <UnconfirmedBadge />}
           </h2>
           <ul>
             {g.items.map((r) => (

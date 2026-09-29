@@ -29,13 +29,16 @@ export const DEADLINE_RULE_LABEL: Record<ReceiptKind, string | null> = {
   other: null,
 }
 
-/** 期限の規定そのものが窓口未確認の種別（指示書 付録）。 */
+/**
+ * 期限の規定そのものが未確認の種別。
+ * こども医療費（県外）の「2年」は、石垣市の公式ページで確認できたので外した（2026-09-29）。
+ */
 export const DEADLINE_UNCONFIRMED: Record<ReceiptKind, boolean> = {
   ninpu: false,
   sanpu: false,
   hearing: false,
   vaccine: false,
-  kodomo_iryo: true,
+  kodomo_iryo: false,
   other: false,
 }
 

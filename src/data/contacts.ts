@@ -32,7 +32,6 @@ export const CONTACTS: ContactEntry[] = [
     keywords: ['健康福祉センター', '妊娠届', '償還払い', '支援給付金', '産後ケア', '通院費助成', '予防接種依頼', '受診票'],
     unconfirmed: [
       '離島通院費助成が里帰り（県外）出産に適用されるか',
-      '新生児聴覚検査助成の上限3,500円・要件',
       '妊婦歯科健診の有無',
     ],
   },
@@ -43,7 +42,6 @@ export const CONTACTS: ContactEntry[] = [
     settingsKey: null,
     topics: ['こども医療費助成', '児童手当（マイナポータル電子申請も可）'],
     keywords: ['こども家庭課', 'こども医療費', '児童手当'],
-    unconfirmed: ['こども医療費（県外受診分）の申請期限2年'],
   },
   {
     id: 'shonan',

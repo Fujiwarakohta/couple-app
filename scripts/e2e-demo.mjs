@@ -220,13 +220,23 @@ try {
   await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)))
   const unconfirmed = await page.evaluate(() => {
     const out = {}
-    for (const id of ['歯科健診の有無', '無痛分娩の追加費用', '離島患者等通院費助成', '受診月の翌月から2年以内', '助成上限3,500円']) {
+    for (const id of ['歯科健診の有無', '無痛分娩の追加費用', '離島患者等通院費助成']) {
       const row = [...document.querySelectorAll('li')].find((li) => li.textContent.includes(id))
       out[id] = !!row && row.textContent.includes('未確認')
     }
     return out
   })
   for (const [k, v] of Object.entries(unconfirmed)) check(`未確認バッジ：${k}`, v)
+  // 公式ページで確認できた項目は、未確認の表示を外している
+  const confirmed = await page.evaluate(() => {
+    const out = {}
+    for (const id of ['受診月の翌月から2年以内', '助成上限3,500円']) {
+      const row = [...document.querySelectorAll('li')].find((li) => li.textContent.includes(id))
+      out[id] = !!row && !row.textContent.includes('未確認')
+    }
+    return out
+  })
+  for (const [k, v] of Object.entries(confirmed)) check(`確認済み（未確認の表示なし）：${k}`, v)
 
   // ---- 設定：EDD 変更で再計算 ----
   await page.goto(`${BASE}/settings?as=father`, { waitUntil: 'networkidle0' })

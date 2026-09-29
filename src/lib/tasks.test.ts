@@ -11,7 +11,12 @@ import {
   tagFamily,
 } from '../data/theme'
 import { CONTACTS, matchContacts, noteTemplate, telHref } from '../data/contacts'
-import { UNCONFIRMED_TASK_IDS, adviceUnconfirmed, taskUnconfirmed } from '../data/unconfirmed'
+import {
+  CONFIRMED,
+  UNCONFIRMED_TASK_IDS,
+  adviceUnconfirmed,
+  taskUnconfirmed,
+} from '../data/unconfirmed'
 import type { ScheduleEvent, Task } from '../types'
 import { lifeStage } from './dates'
 import { bandsOnDay, buildBands, eventsOnDay, monthGrid, resolveEvents } from './schedule'
@@ -92,9 +97,25 @@ describe('未確認の表示', () => {
 
   it('指示書 付録の要確認項目に対応するタスクが未確認になる', () => {
     const byId = new Map(tasks.map((t) => [t.id, t]))
-    for (const id of ['t042', 't058', 't059', 't125', 't130']) {
+    for (const id of ['t042', 't058', 't059']) {
       const t = byId.get(id)
       expect(t && taskUnconfirmed(t.id, t.title), id).not.toBeNull()
+    }
+  })
+
+  it('公式ページで確認できた項目は、未確認の表示を外し、確認日と出典を残す', () => {
+    const byId = new Map(tasks.map((t) => [t.id, t]))
+    for (const id of ['t125', 't130']) {
+      const t = byId.get(id)
+      expect(t && taskUnconfirmed(t.id, t.title), id).toBeNull()
+    }
+    const a32 = ADVICE.find((a) => a.id === 'a32')
+    expect(a32 && adviceUnconfirmed(a32)).toBeNull()
+    const ids = CONFIRMED.flatMap((c) => c.ids)
+    expect(ids.sort()).toEqual(['a32', 't125', 't130'])
+    for (const c of CONFIRMED) {
+      expect(c.source).toContain('石垣市')
+      expect(c.checkedOn).toBe('2026-09-29')
     }
   })
 

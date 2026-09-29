@@ -84,9 +84,9 @@ describe('kindDeadlines', () => {
     expect(result).toEqual([])
   })
 
-  it('こども医療費の期限は未確認として扱う', () => {
+  it('こども医療費の期限（受診日の翌月から2年）は、公式ページで確認済み', () => {
     const result = kindDeadlines([receipt({ kind: 'kodomo_iryo', date: '2027-06-10' })])
-    expect(result[0].unconfirmed).toBe(true)
+    expect(result[0]).toMatchObject({ deadline: '2029-06-30', unconfirmed: false })
   })
 })
 
