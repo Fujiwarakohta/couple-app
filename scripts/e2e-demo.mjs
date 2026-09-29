@@ -137,11 +137,11 @@ try {
       }
     })
     check(
-      'ホーム：見出しの順は「期限」→「いまやるタスク」→「今週の助言」→「相手の更新」',
+      'ホーム：見出しの順は「もうすぐの予定と期限」→「今の時期のタスク」→「今週の助言」→「相手の更新」',
       home.order.join(',') === 'urgent-title,now-title,advice-title,partner-title',
       home.order.join(','),
     )
-    check('ホーム：「いまやるタスク」は最大5件', home.nowRows > 0 && home.nowRows <= 5, `${home.nowRows}件`)
+    check('ホーム：「今の時期のタスク」は最大5件', home.nowRows > 0 && home.nowRows <= 5, `${home.nowRows}件`)
     check('ホーム：タスクの欄に助言のカードが混ざらない', home.nowHasAdviceCard === 0)
     check('ホーム：助言の欄に「完了」ボタンが無い', home.adviceHasTaskButton === false)
     check('ホーム：助言のカードは先頭に「助言」のラベル', home.adviceChips === true)
@@ -197,7 +197,22 @@ try {
   body = await text(page)
   check('ホーム：期限3日後のタスクが「期限まで3日」で出る', body.includes('期限まで3日') && body.includes('葉酸サプリ'))
   const alertCount = await page.$$eval('[data-urgent]', (els) => els.length)
-  check('ホーム：期限7日以内は警告（赤）の枠で表示', alertCount >= 1)
+  check('ホーム：期限7日以内は「もうすぐの予定と期限」の枠に表示', alertCount >= 1)
+  {
+    const colors = await page.evaluate(() => {
+      const box = document.querySelector('[data-urgent]')
+      const btn = box.querySelector('button')
+      const hue = (c) => Number(/oklch\([^ ]+ [^ ]+ ([^ )]+)/.exec(c)?.[1] ?? NaN)
+      return {
+        button: getComputedStyle(btn).backgroundColor,
+        buttonHue: hue(getComputedStyle(btn).backgroundColor),
+        borderHue: hue(getComputedStyle(box).borderTopColor),
+      }
+    })
+    // oklch の色相：赤は 20〜30 前後、オレンジは 40〜75、緑は 140〜170
+    check('ホーム：「完了」ボタンは緑', colors.buttonHue > 140 && colors.buttonHue < 175, colors.button)
+    check('ホーム：期限の枠は赤ではない', !(colors.borderHue < 35), `色相 ${colors.borderHue}`)
+  }
   await page.screenshot({ path: resolve(OUT, 'home-urgent.png') })
 
   // ---- 未確認の表示 ----
@@ -375,7 +390,7 @@ try {
     await wait(300)
     const after = await rows()
     check(
-      'ホーム：「完了」を押すと「いまやるタスク」から消える',
+      'ホーム：「完了」を押すと「今の時期のタスク」から消える',
       after.length <= before.length && JSON.stringify(after) !== JSON.stringify(before),
       label,
     )

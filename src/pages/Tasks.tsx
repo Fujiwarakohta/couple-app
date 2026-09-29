@@ -75,9 +75,9 @@ function StatusToggle({ task }: { task: Task }) {
       <span
         className={`flex size-7 items-center justify-center rounded-full border-2 transition-colors duration-150 ${
           done
-            ? 'border-orange-700 bg-orange-700 text-white dark:border-orange-300 dark:bg-orange-300 dark:text-neutral-900'
+            ? 'border-emerald-700 bg-emerald-700 text-white dark:border-emerald-300 dark:bg-emerald-300 dark:text-neutral-900'
             : mine
-              ? 'border-orange-700 text-orange-800 dark:border-orange-300 dark:text-orange-200'
+              ? 'border-emerald-700 bg-emerald-100 text-emerald-900 dark:border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200'
               : 'border-neutral-600 dark:border-neutral-300'
         }`}
       >

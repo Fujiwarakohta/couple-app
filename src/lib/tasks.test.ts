@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 import tasksJson from '../../seed/tasks.json'
 import scheduleJson from '../../seed/schedule.json'
 import { ADVICE, PHASES } from '../data/static'
-import { KIND_CHIP_CLASS, TAG_CLASS, TAG_FAMILIES, tagFamily } from '../data/theme'
+import {
+  DUE_TEXT_CLASS,
+  KIND_BORDER_CLASS,
+  KIND_CHIP_CLASS,
+  TAG_CLASS,
+  TAG_FAMILIES,
+  tagFamily,
+} from '../data/theme'
 import { CONTACTS, matchContacts, noteTemplate, telHref } from '../data/contacts'
 import { UNCONFIRMED_TASK_IDS, adviceUnconfirmed, taskUnconfirmed } from '../data/unconfirmed'
 import type { ScheduleEvent, Task } from '../types'
@@ -113,6 +120,16 @@ describe('色の使い分け', () => {
   it('分野ごとに色が違う', () => {
     const classes = TAG_FAMILIES.map((f) => TAG_CLASS[f])
     expect(new Set(classes).size).toBe(classes.length)
+  })
+
+  // 「完了」ボタンが緑であることは、実際の画面の色で確認している（scripts/e2e-demo.mjs）
+  it('赤は期限を過ぎたものだけ', () => {
+    expect(DUE_TEXT_CLASS.overdue).toContain('red')
+    expect(DUE_TEXT_CLASS.soon).not.toContain('red')
+    // 種類の色・ボタンに赤やオレンジの塗りつぶしを使わない
+    for (const c of [...Object.values(KIND_CHIP_CLASS), ...Object.values(KIND_BORDER_CLASS)]) {
+      expect(c).not.toMatch(/red|orange/)
+    }
   })
 
   it('種類（タスク・予定・助言）ごとに色が違う', () => {

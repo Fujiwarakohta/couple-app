@@ -81,9 +81,16 @@ function Summary({ receipts, today }: { receipts: Receipt[]; today: Ymd }) {
           <ul className="mt-1 space-y-2">
             {deadlines.map((d) => {
               const left = diffDays(d.deadline, today)
-              const urgent = left <= 30
+              const soon = left <= 30
               return (
-                <li key={d.kind} className={urgent ? 'alert p-3' : ''}>
+                <li
+                  key={d.kind}
+                  className={
+                    soon
+                      ? 'rounded-xl border border-orange-300 bg-orange-50 p-3 dark:border-orange-800 dark:bg-neutral-800'
+                      : ''
+                  }
+                >
                   <p className="flex flex-wrap items-center gap-1.5 text-sm font-bold">
                     {RECEIPT_KIND_LABEL[d.kind]}（{d.count}件）
                     {d.unconfirmed && <UnconfirmedBadge />}
@@ -92,7 +99,7 @@ function Summary({ receipts, today }: { receipts: Receipt[]; today: Ymd }) {
                     {d.unconfirmed ? '期限の目安 ' : '期限 '}
                     {formatJaDate(d.deadline)}
                     <span className="ml-2 text-sm">
-                      {left < 0 ? `（${Math.abs(left)}日超過）` : `（あと${left}日）`}
+                      {left < 0 ? `（期限から${Math.abs(left)}日）` : `（あと${left}日）`}
                     </span>
                   </p>
                   <p className="muted text-xs tabular-nums">

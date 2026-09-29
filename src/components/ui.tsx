@@ -40,7 +40,7 @@ export function TagChip({ tag }: { tag: string }) {
 
 interface SectionHeaderProps {
   id: string
-  kind: ItemKind | 'urgent' | 'partner'
+  kind: ItemKind | 'soon' | 'partner'
   title: string
   icon: ReactNode
   count?: number
@@ -109,7 +109,7 @@ export function ProgressBar({ progress, label }: { progress: Progress; label: st
         className="h-2.5 overflow-hidden rounded-full bg-neutral-300 dark:bg-neutral-600"
       >
         <div
-          className="h-full rounded-full bg-neutral-900 transition-[width] duration-200 dark:bg-neutral-100"
+          className="h-full rounded-full bg-emerald-600 transition-[width] duration-200 dark:bg-emerald-400"
           style={{ width: `${progress.percent}%` }}
         />
       </div>

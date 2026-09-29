@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AdviceCard } from '../components/AdviceCard'
-import { AlertIcon, BulbIcon, CheckIcon, CheckListIcon, PartnerIcon } from '../components/Icons'
+import { BulbIcon, CheckIcon, CheckListIcon, ClockIcon, PartnerIcon } from '../components/Icons'
 import { InstallBanner } from '../components/InstallBanner'
 import { Page } from '../components/Layout'
 import { Choice, EmptyText, KindChip, OwnerBadge, SectionHeader, UnconfirmedBadge } from '../components/ui'
 import { DISCLAIMER, EVENT_TYPE_LABEL, PARTNER_CALL, STATUS_LABEL } from '../data/labels'
 import { ADVICE, PHASES } from '../data/static'
-import { KIND_BORDER_CLASS, KIND_BUTTON_CLASS } from '../data/theme'
+import { DUE_TEXT_CLASS, KIND_BORDER_CLASS } from '../data/theme'
 import { taskUnconfirmed } from '../data/unconfirmed'
 import { adviceWeek, formatJaDate, formatJaRange, formatWeeks, lifeStage } from '../lib/dates'
 import {
@@ -36,7 +36,10 @@ function StageCard() {
 
   if (stage.kind === 'born') {
     return (
-      <section aria-label="現在の状況" className="card">
+      <section
+        aria-label="現在の状況"
+        className="card border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950"
+      >
         <p className="muted text-sm">{babyName ? `${babyName} 生後` : '生後'}</p>
         <p className="text-4xl leading-tight font-bold tabular-nums">{stage.ageDays}日</p>
         <p className="mt-1 text-[15px]">月齢 {stage.ageMonths}か月</p>
@@ -46,14 +49,17 @@ function StageCard() {
   }
 
   return (
-    <section aria-label="現在の状況" className="card">
+    <section
+      aria-label="現在の状況"
+      className="card border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950"
+    >
       <p className="muted text-sm">妊娠</p>
       <p className="text-4xl leading-tight font-bold tabular-nums">
         {formatWeeks(stage.weeks, stage.days)}
       </p>
       <p className="mt-1 text-[15px]">
         {stage.overdue ? (
-          <>出産予定日を {Math.abs(stage.daysUntilEdd)}日 超過</>
+          <>出産予定日から {Math.abs(stage.daysUntilEdd)}日</>
         ) : stage.daysUntilEdd === 0 ? (
           <>今日が出産予定日</>
         ) : (
@@ -82,7 +88,7 @@ function TaskDoneButton({ task }: { task: Task }) {
   return (
     <button
       type="button"
-      className={`btn shrink-0 px-3 text-sm ${KIND_BUTTON_CLASS.task}`}
+      className="btn btn-done shrink-0 px-3 text-sm"
       aria-label={label}
       aria-pressed={shared ? mine : undefined}
       onClick={onClick}
@@ -100,7 +106,7 @@ function UrgentRow({ item }: { item: UrgentItem }) {
   const sharedTask = item.kind === 'task' && isShared(item.task.owner) ? item.task : null
 
   return (
-    <li className="border-t border-neutral-300 py-2 first:border-t-0 dark:border-neutral-600">
+    <li className="border-t border-orange-200 py-2 first:border-t-0 dark:border-neutral-600">
       {/* 1段目：本文（押すと開く）。2段目：日付などの情報と、操作のボタン。 */}
       <Link
         to={item.kind === 'task' ? `/tasks?edit=${item.id}` : '/schedule?mode=list'}
@@ -108,13 +114,13 @@ function UrgentRow({ item }: { item: UrgentItem }) {
         aria-label={`「${title}」を開く`}
       >
         <span className="flex flex-wrap items-center gap-1.5 text-sm">
-          <span className="font-bold text-red-800 dark:text-red-300">{urgentLabel(item)}</span>
+          <span className={`font-bold ${item.overdue ? DUE_TEXT_CLASS.overdue : DUE_TEXT_CLASS.soon}`}>
+            {urgentLabel(item)}
+          </span>
           <KindChip kind={item.kind} />
           <OwnerBadge owner={owner} />
           {item.kind === 'event' && item.event.critical && (
-            <span className="badge border border-red-800 text-red-800 dark:border-red-300 dark:text-red-300">
-              重要
-            </span>
+            <span className="badge border border-current">大切</span>
           )}
         </span>
         <span className="mt-1 block text-[15px]">{title}</span>
@@ -131,7 +137,7 @@ function UrgentRow({ item }: { item: UrgentItem }) {
         ) : (
           <button
             type="button"
-            className={`btn shrink-0 px-3 text-sm ${KIND_BUTTON_CLASS.event}`}
+            className="btn btn-done shrink-0 px-3 text-sm"
             aria-label={`「${title}」を済みにする`}
             onClick={() => actions.patchEvent(item.id, { done: true })}
           >
@@ -149,19 +155,20 @@ function UrgentSection({ items }: { items: UrgentItem[] }) {
     <section aria-labelledby="urgent-title">
       <SectionHeader
         id="urgent-title"
-        kind="urgent"
-        title="期限まで7日以内"
-        icon={<AlertIcon size={18} />}
+        kind="soon"
+        title="もうすぐの予定と期限"
+        icon={<ClockIcon size={18} />}
         count={items.length}
       />
+      <p className="muted mb-2 text-xs">7日以内のものを、近い順に並べています。</p>
       {items.length === 0 ? (
         <div className="card">
-          <EmptyText>7日以内に期限が来るタスク・予定はありません。</EmptyText>
+          <EmptyText>7日以内に期限が来るものはありません。</EmptyText>
         </div>
       ) : (
         <div
           data-urgent
-          className="rounded-xl border-2 border-red-700 bg-red-50 px-4 dark:border-red-400 dark:bg-neutral-800"
+          className="rounded-xl border border-orange-300 bg-orange-50 px-4 dark:border-orange-800 dark:bg-neutral-800"
         >
           <ul>
             {items.map((item) => (
@@ -224,7 +231,7 @@ function NowTasksSection({ urgentTaskIds }: { urgentTaskIds: ReadonlySet<string>
       <SectionHeader
         id="now-title"
         kind="task"
-        title="いまやるタスク"
+        title="今の時期のタスク"
         icon={<CheckListIcon size={18} />}
         count={result.total}
         action={
@@ -233,7 +240,9 @@ function NowTasksSection({ urgentTaskIds }: { urgentTaskIds: ReadonlySet<string>
           </Link>
         }
       />
-      <p className="muted mb-2 text-xs">{phase?.title ?? phaseId} の未完了タスク</p>
+      <p className="muted mb-2 text-xs">
+        {phase?.title ?? phaseId}。できるものから、ひとつずつで大丈夫です。
+      </p>
       <div className="mb-3">
         <Choice
           legend="表示するタスク"
@@ -247,8 +256,8 @@ function NowTasksSection({ urgentTaskIds }: { urgentTaskIds: ReadonlySet<string>
         {result.visible.length === 0 ? (
           <EmptyText>
             {scope === 'mine'
-              ? 'このフェーズで、自分の担当の未完了タスクはありません。'
-              : 'このフェーズの未完了タスクはありません。'}
+              ? 'この時期の自分の担当は、すべて済んでいます。'
+              : 'この時期のタスクは、すべて済んでいます。'}
           </EmptyText>
         ) : (
           <ul>
@@ -286,7 +295,7 @@ function AdviceSection() {
         }
       />
       <p className="muted mb-1 text-xs">
-        知っておくと役立つ情報です。読んだら「既読にする」を押すと、たたまれます。
+        知っておくと安心な情報です。読んだら「既読にする」を押すと、たたまれます。
       </p>
       <p className="muted mb-3 text-xs">{DISCLAIMER}</p>
       <div className="space-y-3">

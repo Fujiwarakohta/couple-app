@@ -148,7 +148,7 @@ export function urgentItems(
 }
 
 export function urgentLabel(item: UrgentItem): string {
-  if (item.overdue) return `期限超過（${Math.abs(item.daysLeft)}日）`
+  if (item.overdue) return `期限から${Math.abs(item.daysLeft)}日`
   if (item.daysLeft === 0) {
     return item.kind === 'event' && item.phase === 'start' ? '今日' : '今日まで'
   }

@@ -116,6 +116,13 @@ export const PartnerIcon = ({ size }: IconProps) => (
   </Svg>
 )
 
+export const ClockIcon = ({ size }: IconProps) => (
+  <Svg size={size}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </Svg>
+)
+
 export const AlertIcon = ({ size }: IconProps) => (
   <Svg size={size}>
     <path d="M12 3l10 18H2L12 3z" />

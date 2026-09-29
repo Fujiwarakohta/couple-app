@@ -13,7 +13,7 @@
   }
 
   body {
-    @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
+    @apply bg-stone-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
     font-family: var(--font-sans);
     line-height: 1.6;
     overscroll-behavior-y: none;
@@ -69,39 +69,46 @@
     @apply inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg px-4 text-[15px] leading-tight font-semibold;
   }
 
+  /*
+   * 色の使い分けは src/data/theme.ts を参照。テーマは「安心感」。
+   * 真っ黒や赤の塗りつぶしは使わず、落ち着いた色と淡い色を基調にする。
+   */
+
+  /* 保存・追加・ログインなどの主要な操作 */
   .btn-primary {
-    @apply bg-neutral-900 text-white disabled:bg-neutral-300 disabled:text-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:disabled:bg-neutral-700 dark:disabled:text-neutral-300;
+    @apply bg-stone-700 text-white disabled:bg-stone-200 disabled:text-stone-700 dark:bg-stone-200 dark:text-stone-900 dark:disabled:bg-stone-700 dark:disabled:text-stone-300;
   }
 
   .btn-ghost {
     @apply border border-neutral-500 bg-white text-neutral-900 dark:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-100;
   }
 
-  /* 種類ごとの主な操作。色の使い分けは src/data/theme.ts を参照。 */
+  /* 完了・済み（緑） */
+  .btn-done {
+    @apply bg-emerald-700 text-white dark:bg-emerald-300 dark:text-neutral-900;
+  }
+
+  /* 押してある状態（自分は済み、など）。淡い緑にして、押す前と区別する。 */
+  .btn-done[aria-pressed='true'] {
+    @apply border border-emerald-700 bg-emerald-100 text-emerald-900 dark:border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200;
+  }
+
+  /* タスク・予定の画面の「追加」（その種類の淡い色） */
   .btn-task {
-    @apply bg-orange-700 text-white dark:bg-orange-300 dark:text-neutral-900;
+    @apply border border-amber-500 bg-amber-100 text-amber-900 dark:border-amber-500 dark:bg-amber-950 dark:text-amber-200;
   }
 
   .btn-event {
-    @apply bg-violet-700 text-white dark:bg-violet-300 dark:text-neutral-900;
+    @apply border border-violet-500 bg-violet-100 text-violet-900 dark:border-violet-400 dark:bg-violet-950 dark:text-violet-200;
   }
 
-  .btn-advice {
-    @apply bg-teal-700 text-white dark:bg-teal-300 dark:text-neutral-900;
-  }
-
-  /* 押してある状態（自分は済み、など）。同じ色の枠だけにして、押す前と区別する。 */
-  .btn-task[aria-pressed='true'] {
-    @apply border-2 border-orange-700 bg-white text-orange-900 dark:border-orange-300 dark:bg-neutral-800 dark:text-orange-200;
-  }
-
-  /* 助言の「既読」「ピン留め」。押す前は枠だけ、押した後は塗りつぶし。 */
+  /* 助言の「既読」「ピン留め」。押す前は枠だけ、押した後は淡い青緑。 */
   .chip.chip-advice {
-    @apply border-teal-700 text-teal-900 dark:border-teal-300 dark:text-teal-200;
+    @apply border-teal-600 text-teal-900 dark:border-teal-400 dark:text-teal-200;
   }
 
   .chip.chip-advice[aria-pressed='true'] {
-    @apply border-teal-700 bg-teal-700 text-white dark:border-teal-300 dark:bg-teal-300 dark:text-neutral-900;
+    @apply border-teal-600 bg-teal-100 text-teal-900 dark:border-teal-400 dark:bg-teal-950 dark:text-teal-200;
   }
 
   .btn-danger {
@@ -122,7 +129,7 @@
 
   .chip[aria-pressed='true'],
   .chip[aria-checked='true'] {
-    @apply border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900;
+    @apply border-stone-700 bg-stone-700 text-white dark:border-stone-200 dark:bg-stone-200 dark:text-stone-900;
   }
 
   .badge {

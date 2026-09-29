@@ -87,7 +87,7 @@ describe('urgentItems：タスク', () => {
   it('期限超過の未完了タスクは残す', () => {
     const items = urgentItems([task({ id: 't1', dueDate: '2027-01-05', status: 'doing' })], [], input, today)
     expect(items[0]).toMatchObject({ overdue: true, daysLeft: -5 })
-    expect(urgentLabel(items[0])).toBe('期限超過（5日）')
+    expect(urgentLabel(items[0])).toBe('期限から5日')
   })
 })
 
