@@ -108,6 +108,14 @@ export const PinIcon = ({ size }: IconProps) => (
   </Svg>
 )
 
+export const PartnerIcon = ({ size }: IconProps) => (
+  <Svg size={size}>
+    <circle cx="8" cy="8" r="3" />
+    <circle cx="17" cy="9" r="2.5" />
+    <path d="M2 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3.5-.5 7 1.5 7 5.5" />
+  </Svg>
+)
+
 export const AlertIcon = ({ size }: IconProps) => (
   <Svg size={size}>
     <path d="M12 3l10 18H2L12 3z" />

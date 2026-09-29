@@ -55,7 +55,8 @@ const views = [
   { name: 'スケジュール（日のシート）', path: '/schedule?month=2027-05-01', prepare: (p) => clickBy(p, '2027-05-24（月） 予定') },
   { name: 'スケジュール（リスト）', path: '/schedule?mode=list' },
   { name: '予定の編集シート', path: '/schedule?mode=list', prepare: (p) => clickBy(p, '妊娠届・親子健康手帳交付・支援給付金(1回目)面談」を編集') },
-  { name: 'アドバイス', path: '/advice' },
+  { name: '助言', path: '/advice' },
+  { name: 'ホーム（母）', path: '/', as: 'mother' },
   { name: '記録（体重）', path: '/records' },
   { name: '記録（血圧）', path: '/records', prepare: (p) => clickBy(p, '血圧') },
   { name: '記録（胎動）', path: '/records', prepare: (p) => clickBy(p, '胎動') },
@@ -122,7 +123,7 @@ try {
         { name: 'prefers-reduced-motion', value: 'reduce' },
       ])
       const sep = view.path.includes('?') ? '&' : '?'
-      await page.goto(`${BASE}${view.path}${sep}as=father`, { waitUntil: 'networkidle0' })
+      await page.goto(`${BASE}${view.path}${sep}as=${view.as ?? 'father'}`, { waitUntil: 'networkidle0' })
       const issues = []
       try {
         if (view.prepare) await view.prepare(page)

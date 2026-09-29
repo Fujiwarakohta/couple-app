@@ -1,7 +1,8 @@
+import { KIND_BORDER_CLASS } from '../data/theme'
 import { adviceUnconfirmed } from '../data/unconfirmed'
 import type { AdviceItem, AdviceState } from '../types'
 import { CheckIcon, PinIcon } from './Icons'
-import { UnconfirmedBadge } from './ui'
+import { KindChip, TagChip, UnconfirmedBadge } from './ui'
 
 function toggleId(list: string[], id: string): string[] {
   return list.includes(id) ? list.filter((x) => x !== id) : [...list, id]
@@ -19,22 +20,22 @@ interface AdviceCardProps {
   heading?: 'h2' | 'h3'
 }
 
-/** 本文・数値は seed の値をそのまま表示する（丸め・加工をしない）。出典を必ず表示する。 */
+/**
+ * 助言（知っておくこと）のカード。タスク（やること）と見分けられるよう、
+ * 左の帯と「助言」のラベルを青緑にし、操作は「既読」「ピン留め」だけにしている。
+ * 本文・数値は seed の値をそのまま表示する（丸め・加工をしない）。出典を必ず表示する。
+ */
 export function AdviceCard({ item, state, onChange, heading: Heading = 'h3' }: AdviceCardProps) {
   const read = state.read.includes(item.id)
   const pinned = state.pinned.includes(item.id)
   const unconfirmed = adviceUnconfirmed(item)
 
   return (
-    <article className="card">
+    <article className={`card ${KIND_BORDER_CLASS.advice}`}>
       <div className="flex flex-wrap items-center gap-1.5">
+        <KindChip kind="advice" />
         {item.tags.map((tag) => (
-          <span
-            key={tag}
-            className="badge bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100"
-          >
-            {tag}
-          </span>
+          <TagChip key={tag} tag={tag} />
         ))}
         <span className="muted text-xs">{weeksLabel(item.weeks)}</span>
         {pinned && <span className="badge border border-current">ピン留め</span>}
@@ -52,7 +53,7 @@ export function AdviceCard({ item, state, onChange, heading: Heading = 'h3' }: A
       <div className="mt-3 flex gap-2">
         <button
           type="button"
-          className="chip flex-1"
+          className="chip chip-advice flex-1"
           aria-pressed={read}
           onClick={() => onChange({ ...state, read: toggleId(state.read, item.id) })}
         >
@@ -61,7 +62,7 @@ export function AdviceCard({ item, state, onChange, heading: Heading = 'h3' }: A
         </button>
         <button
           type="button"
-          className="chip flex-1"
+          className="chip chip-advice flex-1"
           aria-pressed={pinned}
           onClick={() => onChange({ ...state, pinned: toggleId(state.pinned, item.id) })}
         >

@@ -626,8 +626,8 @@ export default function Schedule() {
     <Page
       title="スケジュール"
       action={
-        <button type="button" className="btn -mr-3 px-3 text-sm" onClick={() => openAdd(today)}>
-          <PlusIcon size={20} />
+        <button type="button" className="btn btn-event px-3 text-sm" onClick={() => openAdd(today)}>
+          <PlusIcon size={18} />
           追加
         </button>
       }

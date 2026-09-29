@@ -77,6 +77,33 @@
     @apply border border-neutral-500 bg-white text-neutral-900 dark:border-neutral-400 dark:bg-neutral-800 dark:text-neutral-100;
   }
 
+  /* 種類ごとの主な操作。色の使い分けは src/data/theme.ts を参照。 */
+  .btn-task {
+    @apply bg-orange-700 text-white dark:bg-orange-300 dark:text-neutral-900;
+  }
+
+  .btn-event {
+    @apply bg-violet-700 text-white dark:bg-violet-300 dark:text-neutral-900;
+  }
+
+  .btn-advice {
+    @apply bg-teal-700 text-white dark:bg-teal-300 dark:text-neutral-900;
+  }
+
+  /* 押してある状態（自分は済み、など）。同じ色の枠だけにして、押す前と区別する。 */
+  .btn-task[aria-pressed='true'] {
+    @apply border-2 border-orange-700 bg-white text-orange-900 dark:border-orange-300 dark:bg-neutral-800 dark:text-orange-200;
+  }
+
+  /* 助言の「既読」「ピン留め」。押す前は枠だけ、押した後は塗りつぶし。 */
+  .chip.chip-advice {
+    @apply border-teal-700 text-teal-900 dark:border-teal-300 dark:text-teal-200;
+  }
+
+  .chip.chip-advice[aria-pressed='true'] {
+    @apply border-teal-700 bg-teal-700 text-white dark:border-teal-300 dark:bg-teal-300 dark:text-neutral-900;
+  }
+
   .btn-danger {
     @apply border border-red-700 bg-white text-red-800 dark:border-red-400 dark:bg-neutral-800 dark:text-red-300;
   }
@@ -114,7 +141,7 @@
     @apply mb-1 block text-sm font-semibold;
   }
 
-  /* 期限警告（アクセントは赤の1色） */
+  /* エラーや期限切れなどの警告（赤） */
   .alert {
     @apply rounded-xl border border-red-700 bg-red-50 p-4 text-red-900 dark:border-red-400 dark:bg-red-950 dark:text-red-100;
   }

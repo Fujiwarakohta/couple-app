@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CheckIcon, ChevronRightIcon, PlusIcon } from '../components/Icons'
 import { Page } from '../components/Layout'
 import { Sheet } from '../components/Sheet'
@@ -74,9 +75,9 @@ function StatusToggle({ task }: { task: Task }) {
       <span
         className={`flex size-7 items-center justify-center rounded-full border-2 transition-colors duration-150 ${
           done
-            ? 'border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900'
+            ? 'border-orange-700 bg-orange-700 text-white dark:border-orange-300 dark:bg-orange-300 dark:text-neutral-900'
             : mine
-              ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100'
+              ? 'border-orange-700 text-orange-800 dark:border-orange-300 dark:text-orange-200'
               : 'border-neutral-600 dark:border-neutral-300'
         }`}
       >
@@ -485,8 +486,18 @@ function PhaseSection({
 
 export default function Tasks() {
   const { data, today } = useAppData()
+  const [params, setParams] = useSearchParams()
   const [filter, setFilter] = useState<TaskFilter>(DEFAULT_TASK_FILTER)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingId, setEditingIdState] = useState<string | null>(() => params.get('edit'))
+  const setEditingId = (id: string | null) => {
+    setEditingIdState(id)
+    // 閉じたら URL の ?edit= を消す（戻る・再読み込みで開き直さないように）
+    if (id === null && params.has('edit')) {
+      const next = new URLSearchParams(params)
+      next.delete('edit')
+      setParams(next, { replace: true })
+    }
+  }
   const [adding, setAdding] = useState(false)
 
   const { edd, birthDate } = data.settings
@@ -506,8 +517,8 @@ export default function Tasks() {
     <Page
       title="タスク"
       action={
-        <button type="button" className="btn -mr-3 px-3 text-sm" onClick={() => setAdding(true)}>
-          <PlusIcon size={20} />
+        <button type="button" className="btn btn-task px-3 text-sm" onClick={() => setAdding(true)}>
+          <PlusIcon size={18} />
           追加
         </button>
       }

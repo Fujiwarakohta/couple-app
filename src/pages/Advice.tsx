@@ -4,6 +4,7 @@ import { Page } from '../components/Layout'
 import { Choice, EmptyText } from '../components/ui'
 import { DISCLAIMER } from '../data/labels'
 import { ADVICE } from '../data/static'
+import { TAG_CLASS, TAG_FAMILIES, TAG_FAMILY_LABEL, tagFamily } from '../data/theme'
 import { adviceWeek, formatWeeks, lifeStage } from '../lib/dates'
 import { adviceForWeek } from '../lib/home'
 import { useAppData } from '../state/AppContext'
@@ -42,7 +43,7 @@ export default function Advice() {
   }, [scope, tag, hideRead, week, state])
 
   return (
-    <Page title="アドバイス">
+    <Page title="助言">
       {/* 免責は固定文で常に表示する */}
       <p className="card text-sm font-semibold" role="note">
         {DISCLAIMER}
@@ -52,7 +53,7 @@ export default function Advice() {
         <p className="text-sm">
           {stage.kind === 'pregnant'
             ? `現在：妊娠 ${formatWeeks(stage.weeks, stage.days)}`
-            : `現在：生後 ${stage.ageDays}日（アドバイスは ${week}週相当を表示）`}
+            : `現在：生後 ${stage.ageDays}日（助言は ${week}週相当を表示）`}
         </p>
         <Choice legend="表示する範囲" options={SCOPE_OPTIONS} value={scope} onChange={setScope} />
         <fieldset>
@@ -74,10 +75,21 @@ export default function Advice() {
                 aria-pressed={tag === t}
                 onClick={() => setTag(tag === t ? null : t)}
               >
+                <span
+                  className={`mr-1.5 inline-block size-3 rounded-full border border-neutral-500 ${TAG_CLASS[tagFamily(t)].split(' ')[0]}`}
+                  aria-hidden="true"
+                />
                 {t}
               </button>
             ))}
           </div>
+          <ul className="flex flex-wrap gap-1.5 text-xs" aria-label="タグの色の見方">
+            {TAG_FAMILIES.map((f) => (
+              <li key={f} className={`badge ${TAG_CLASS[f]}`}>
+                {TAG_FAMILY_LABEL[f]}
+              </li>
+            ))}
+          </ul>
         </fieldset>
         <button
           type="button"
@@ -95,7 +107,7 @@ export default function Advice() {
       <div className="space-y-3">
         {items.length === 0 && (
           <div className="card">
-            <EmptyText>条件に合うアドバイスはありません。</EmptyText>
+            <EmptyText>条件に合う助言はありません。</EmptyText>
           </div>
         )}
         {items.map((item) => (

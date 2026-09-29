@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import tasksJson from '../../seed/tasks.json'
 import scheduleJson from '../../seed/schedule.json'
-import { PHASES } from '../data/static'
+import { ADVICE, PHASES } from '../data/static'
+import { KIND_CHIP_CLASS, TAG_CLASS, TAG_FAMILIES, tagFamily } from '../data/theme'
 import { CONTACTS, matchContacts, noteTemplate, telHref } from '../data/contacts'
 import { UNCONFIRMED_TASK_IDS, adviceUnconfirmed, taskUnconfirmed } from '../data/unconfirmed'
 import type { ScheduleEvent, Task } from '../types'
@@ -100,6 +101,23 @@ describe('未確認の表示', () => {
     expect(adviceUnconfirmed({ id: 'x', body: '本文', source: '出典', verify: '理由' })).toEqual({
       reason: '理由',
     })
+  })
+})
+
+describe('色の使い分け', () => {
+  it('助言に出てくるタグは、すべて分野が決まっている', () => {
+    const tags = new Set(ADVICE.flatMap((a) => a.tags))
+    for (const tag of tags) expect(tagFamily(tag), tag).not.toBe('other')
+  })
+
+  it('分野ごとに色が違う', () => {
+    const classes = TAG_FAMILIES.map((f) => TAG_CLASS[f])
+    expect(new Set(classes).size).toBe(classes.length)
+  })
+
+  it('種類（タスク・予定・助言）ごとに色が違う', () => {
+    const chips = Object.values(KIND_CHIP_CLASS)
+    expect(new Set(chips).size).toBe(3)
   })
 })
 

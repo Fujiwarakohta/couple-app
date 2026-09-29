@@ -5,6 +5,54 @@ import { isOpen } from './tasks'
 export const URGENT_DAYS = 7
 export const PARTNER_UPDATE_HOURS = 24
 export const HOME_ADVICE_MAX = 3
+export const NOW_TASKS_MAX = 5
+
+export type TaskScope = 'mine' | 'all'
+
+export interface NowTasks {
+  /** ホームに出す分（最大5件） */
+  visible: Task[]
+  /** 条件に合う件数の合計 */
+  total: number
+}
+
+const ROLE_OWNER_LABEL: Record<Role, Task['owner']> = { father: '父', mother: '母' }
+
+/** 自分がまだやることが残っているタスクか。 */
+export function isMine(task: Task, role: Role | null): boolean {
+  if (!role) return true
+  if (task.owner === '両') return !task.doneBy[role]
+  return task.owner === ROLE_OWNER_LABEL[role]
+}
+
+/**
+ * ホームの「いまやるタスク」。今のフェーズの未完了タスクを出す。
+ * 並び順：相手が先にチェックして自分を待っているもの → 進行中 → 期限が近い順 → seed の順。
+ * 「期限まで7日以内」に出ているタスクは、重複を避けるため除く。
+ */
+export function nowTasks(
+  tasks: Task[],
+  phaseId: string,
+  role: Role | null,
+  scope: TaskScope,
+  excludeIds: ReadonlySet<string> = new Set(),
+): NowTasks {
+  const partner: Role | null = role === 'father' ? 'mother' : role === 'mother' ? 'father' : null
+  const waitingForMe = (t: Task) =>
+    t.owner === '両' && !!role && !!partner && t.doneBy[partner] && !t.doneBy[role]
+  const rank = (t: Task) => (waitingForMe(t) ? 0 : t.status === 'doing' ? 1 : 2)
+
+  const list = tasks
+    .filter((t) => !t.deleted && t.phase === phaseId && isOpen(t.status) && !excludeIds.has(t.id))
+    .filter((t) => scope === 'all' || isMine(t, role))
+    .sort(
+      (a, b) =>
+        rank(a) - rank(b) ||
+        (a.dueDate ?? '9999-99-99').localeCompare(b.dueDate ?? '9999-99-99') ||
+        a.id.localeCompare(b.id, 'en', { numeric: true }),
+    )
+  return { visible: list.slice(0, NOW_TASKS_MAX), total: list.length }
+}
 
 export type UrgentItem =
   | {

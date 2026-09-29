@@ -1,6 +1,15 @@
 import type { ReactNode } from 'react'
 import { contactPhone, telHref, type ContactEntry } from '../data/contacts'
 import { OWNER_BADGE_CLASS, OWNER_LABEL } from '../data/labels'
+import {
+  KIND_CHIP_CLASS,
+  KIND_ICON_CLASS,
+  KIND_LABEL,
+  TAG_CLASS,
+  TAG_FAMILY_LABEL,
+  tagFamily,
+  type ItemKind,
+} from '../data/theme'
 import type { Progress } from '../lib/tasks'
 import type { Contacts, Owner } from '../types'
 import { PhoneIcon } from './Icons'
@@ -11,6 +20,51 @@ export function OwnerBadge({ owner }: { owner: Owner }) {
       <span className="sr-only">担当：</span>
       {OWNER_LABEL[owner]}
     </span>
+  )
+}
+
+/** 種類（タスク／予定／助言）を示すラベル。色と文字の両方で示す。 */
+export function KindChip({ kind }: { kind: ItemKind }) {
+  return <span className={`badge ${KIND_CHIP_CLASS[kind]}`}>{KIND_LABEL[kind]}</span>
+}
+
+/** 助言のタグ。分野ごとに色を分ける。 */
+export function TagChip({ tag }: { tag: string }) {
+  const family = tagFamily(tag)
+  return (
+    <span className={`badge ${TAG_CLASS[family]}`} title={TAG_FAMILY_LABEL[family]}>
+      {tag}
+    </span>
+  )
+}
+
+interface SectionHeaderProps {
+  id: string
+  kind: ItemKind | 'urgent' | 'partner'
+  title: string
+  icon: ReactNode
+  count?: number
+  action?: ReactNode
+}
+
+/** 画面内の節の見出し。種類の色のアイコンを付ける。 */
+export function SectionHeader({ id, kind, title, icon, count, action }: SectionHeaderProps) {
+  return (
+    <div className="mb-2 flex min-h-11 items-center justify-between gap-2">
+      <h2 id={id} className="section-title flex items-center gap-2">
+        <span
+          className={`flex size-7 shrink-0 items-center justify-center rounded-lg ${KIND_ICON_CLASS[kind]}`}
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
+        <span>{title}</span>
+        {typeof count === 'number' && (
+          <span className="muted text-sm font-normal tabular-nums">{count}件</span>
+        )}
+      </h2>
+      {action}
+    </div>
   )
 }
 

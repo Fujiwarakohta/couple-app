@@ -110,7 +110,61 @@ try {
   check('ホーム：日付を「2027-05-24（月）」形式で表示', body.includes('2027-05-24（月）'))
   check('ホーム：免責の固定文を表示', body.includes('一般情報です。主治医の指示を優先してください。'))
   const adviceCount = await page.$$eval('article', (els) => els.length)
-  check('ホーム：今週のアドバイスは最大3件', adviceCount <= 3 && adviceCount > 0, `${adviceCount}件`)
+  check('ホーム：今週の助言は最大3件', adviceCount <= 3 && adviceCount > 0, `${adviceCount}件`)
+
+  // ---- ホーム：タスクと助言を分けて表示 ----
+  {
+    const home = await page.evaluate(() => {
+      const section = (id) => document.getElementById(id)?.closest('section')
+      const now = section('now-title')
+      const advice = section('advice-title')
+      const order = [...document.querySelectorAll('main h2')].map((h) => h.id)
+      return {
+        order,
+        nowRows: now ? now.querySelectorAll('li').length : -1,
+        nowText: now?.innerText ?? '',
+        nowHasAdviceCard: now ? now.querySelectorAll('article').length : -1,
+        adviceHasTaskButton: advice
+          ? [...advice.querySelectorAll('button')].some((b) => b.textContent.includes('完了'))
+          : null,
+        adviceChips: advice
+          ? [...advice.querySelectorAll('article')].every((a) => a.textContent.startsWith('助言'))
+          : null,
+        taskButtonColor: now ? getComputedStyle(now.querySelector('li button')).backgroundColor : '',
+        adviceButtonBorder: advice
+          ? getComputedStyle(advice.querySelector('article button')).borderColor
+          : '',
+      }
+    })
+    check(
+      'ホーム：見出しの順は「期限」→「いまやるタスク」→「今週の助言」→「相手の更新」',
+      home.order.join(',') === 'urgent-title,now-title,advice-title,partner-title',
+      home.order.join(','),
+    )
+    check('ホーム：「いまやるタスク」は最大5件', home.nowRows > 0 && home.nowRows <= 5, `${home.nowRows}件`)
+    check('ホーム：タスクの欄に助言のカードが混ざらない', home.nowHasAdviceCard === 0)
+    check('ホーム：助言の欄に「完了」ボタンが無い', home.adviceHasTaskButton === false)
+    check('ホーム：助言のカードは先頭に「助言」のラベル', home.adviceChips === true)
+    check(
+      'ホーム：タスクのボタンと助言のボタンで色が違う',
+      home.taskButtonColor !== '' && home.taskButtonColor !== home.adviceButtonBorder,
+      `${home.taskButtonColor} / ${home.adviceButtonBorder}`,
+    )
+    check('ホーム：父には母だけの担当のタスクを出さない（自分の担当）', !home.nowText.includes('葉酸サプリ'))
+
+    // タスクの本文から編集シートを開く
+    const firstLink = await page.$('section a[href*="/tasks?edit="]')
+    const href = await firstLink.evaluate((a) => a.getAttribute('href'))
+    await firstLink.click()
+    await page.waitForSelector('dialog[open]', { timeout: 5000 })
+    const sheetTitle = await page.$eval('dialog[open] h2', (h) => h.textContent)
+    check('ホーム：タスクの本文を押すと、そのタスクの編集シートが開く', sheetTitle === 'タスクを編集', href)
+    await clickBy(page, '閉じる', { selector: 'dialog[open] button' })
+    const url = await page.evaluate(() => location.search)
+    check('編集シートを閉じると URL の ?edit= が消える', !url.includes('edit='), url)
+    await page.goto(`${BASE}/?as=father`, { waitUntil: 'networkidle0' })
+    body = await text(page)
+  }
 
   // ---- 母がタスクを完了 → 父のホームに表示 ----
   await page.goto(`${BASE}/tasks?as=mother`, { waitUntil: 'networkidle0' })
@@ -142,7 +196,7 @@ try {
   await page.goto(`${BASE}/?as=father`, { waitUntil: 'networkidle0' })
   body = await text(page)
   check('ホーム：期限3日後のタスクが「期限まで3日」で出る', body.includes('期限まで3日') && body.includes('葉酸サプリ'))
-  const alertCount = await page.$$eval('.alert', (els) => els.length)
+  const alertCount = await page.$$eval('[data-urgent]', (els) => els.length)
   check('ホーム：期限7日以内は警告（赤）の枠で表示', alertCount >= 1)
   await page.screenshot({ path: resolve(OUT, 'home-urgent.png') })
 
@@ -300,6 +354,36 @@ try {
     await page.screenshot({ path: resolve(OUT, 'tasks-shared-edit.png') })
     await clickBy(page, '閉じる', { selector: 'dialog[open] button' })
     await page.screenshot({ path: resolve(OUT, 'tasks-shared.png') })
+  }
+
+  // ---- ホームからタスクを完了にする ----
+  {
+    await page.goto(`${BASE}/?as=father`, { waitUntil: 'networkidle0' })
+    const rows = () =>
+      page.evaluate(() => {
+        const s = document.getElementById('now-title')?.closest('section')
+        return s ? [...s.querySelectorAll('li a')].map((a) => a.getAttribute('href')) : []
+      })
+    const before = await rows()
+    const target = await page.evaluateHandle(() => {
+      const s = document.getElementById('now-title')?.closest('section')
+      return [...s.querySelectorAll('li button')].find((b) => b.textContent.trim() === '完了')
+    })
+    const label = await target.evaluate((b) => b.getAttribute('aria-label'))
+    await target.evaluate((b) => b.scrollIntoView({ block: 'center' }))
+    await target.click()
+    await wait(300)
+    const after = await rows()
+    check(
+      'ホーム：「完了」を押すと「いまやるタスク」から消える',
+      after.length <= before.length && JSON.stringify(after) !== JSON.stringify(before),
+      label,
+    )
+    await page.screenshot({ path: resolve(OUT, 'home-new.png') })
+    await page.screenshot({ path: resolve(OUT, 'home-new-full.png'), fullPage: true })
+    await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }])
+    await page.screenshot({ path: resolve(OUT, 'home-new-dark-full.png'), fullPage: true })
+    await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'light' }])
   }
 
   // ---- 許可していないアカウント ----

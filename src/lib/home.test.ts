@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest'
 import scheduleJson from '../../seed/schedule.json'
 import { ADVICE } from '../data/static'
 import type { ScheduleEvent, Task } from '../types'
-import { adviceForWeek, homeAdvice, partnerUpdates, urgentItems, urgentLabel } from './home'
+import {
+  NOW_TASKS_MAX,
+  adviceForWeek,
+  homeAdvice,
+  isMine,
+  nowTasks,
+  partnerUpdates,
+  urgentItems,
+  urgentLabel,
+} from './home'
 
 const EDD = '2027-05-24'
 const input = { edd: EDD }
@@ -167,6 +176,61 @@ describe('homeAdvice', () => {
     expect(result.visible[0].id).toBe('a06')
     expect(result.visible.some((a) => a.id === 'a01')).toBe(false)
     expect(result.read.map((a) => a.id)).toEqual(['a01'])
+  })
+})
+
+describe('nowTasks（いまやるタスク）', () => {
+  const list = [
+    task({ id: 't001', phase: 'p0', owner: '母' }),
+    task({ id: 't002', phase: 'p0', owner: '父' }),
+    task({ id: 't003', phase: 'p0', owner: '両' }),
+    task({ id: 't004', phase: 'p0', owner: '両', status: 'doing', doneBy: { father: false, mother: true } }),
+    task({ id: 't005', phase: 'p0', owner: '両', status: 'doing', doneBy: { father: true, mother: false } }),
+    task({ id: 't006', phase: 'p0', owner: '父', status: 'done' }),
+    task({ id: 't007', phase: 'p0', owner: '父', status: 'na' }),
+    task({ id: 't008', phase: 'p0', owner: '父', deleted: true }),
+    task({ id: 't009', phase: 'p1', owner: '父' }),
+    task({ id: 't010', phase: 'p0', owner: '父', status: 'doing' }),
+    task({ id: 't011', phase: 'p0', owner: '父', dueDate: '2026-10-20' }),
+  ]
+
+  it('今のフェーズの、自分の担当の未完了タスクだけを出す', () => {
+    const r = nowTasks(list, 'p0', 'father', 'mine')
+    expect(r.visible.map((t) => t.id)).toEqual(['t004', 't010', 't011', 't002', 't003'])
+    expect(r.total).toBe(5)
+  })
+
+  it('「両方」のタスクは、自分がチェック済みなら自分の担当から外す', () => {
+    expect(isMine(list[4], 'father')).toBe(false)
+    expect(isMine(list[4], 'mother')).toBe(true)
+    expect(nowTasks(list, 'p0', 'father', 'mine').visible.some((t) => t.id === 't005')).toBe(false)
+  })
+
+  it('相手が先にチェックして自分を待っているタスクを先頭にする', () => {
+    expect(nowTasks(list, 'p0', 'father', 'mine').visible[0].id).toBe('t004')
+    expect(nowTasks(list, 'p0', 'mother', 'mine').visible[0].id).toBe('t005')
+  })
+
+  it('母の担当は母にだけ出る', () => {
+    const r = nowTasks(list, 'p0', 'mother', 'mine')
+    expect(r.visible.map((t) => t.id)).toEqual(['t005', 't001', 't003'])
+  })
+
+  it('「2人分」は担当に関係なく出す', () => {
+    const r = nowTasks(list, 'p0', 'father', 'all')
+    expect(r.total).toBe(7)
+    expect(r.visible).toHaveLength(NOW_TASKS_MAX)
+  })
+
+  it('「期限まで7日以内」に出ているタスクは除く', () => {
+    const r = nowTasks(list, 'p0', 'father', 'mine', new Set(['t011']))
+    expect(r.visible.some((t) => t.id === 't011')).toBe(false)
+    expect(r.total).toBe(4)
+  })
+
+  it('完了・該当なし・削除済み・別のフェーズは出さない', () => {
+    const ids = nowTasks(list, 'p0', 'father', 'all').visible.map((t) => t.id)
+    for (const id of ['t006', 't007', 't008', 't009']) expect(ids).not.toContain(id)
   })
 })
 
