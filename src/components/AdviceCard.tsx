@@ -1,7 +1,8 @@
 import { KIND_BORDER_CLASS } from '../data/theme'
 import { adviceUnconfirmed } from '../data/unconfirmed'
 import type { AdviceItem, AdviceState } from '../types'
-import { CheckIcon, PinIcon } from './Icons'
+import { telHref } from '../data/contacts'
+import { CheckIcon, PhoneIcon, PinIcon } from './Icons'
 import { KindChip, TagChip, UnconfirmedBadge } from './ui'
 
 function toggleId(list: string[], id: string): string[] {
@@ -48,6 +49,25 @@ export function AdviceCard({ item, state, onChange, heading: Heading = 'h3' }: A
           <span className="font-semibold">未確認：</span>
           {unconfirmed.reason}
         </p>
+      )}
+      {item.contacts && item.contacts.length > 0 && (
+        <ul className="mt-3 space-y-2" aria-label="問い合わせ先">
+          {item.contacts.map((c) => (
+            <li key={c.phone + c.name}>
+              <a
+                href={telHref(c.phone)}
+                className="btn btn-ghost w-full justify-start px-3 text-left text-sm"
+                aria-label={`${c.name}に電話する ${c.phone}`}
+              >
+                <PhoneIcon size={18} />
+                <span className="min-w-0 flex-1 py-1.5">
+                  <span className="block font-normal">{c.name}</span>
+                  <span className="block tabular-nums">{c.phone}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
       )}
       <p className="muted mt-2 text-xs">出典：{item.source}</p>
       <div className="mt-3 flex gap-2">

@@ -9,7 +9,7 @@
  * 担当（だれの担当か）……labels.ts の OWNER_BADGE_CLASS
  *   母＝ローズ / 父＝ブルー / 両方＝グリーン
  * 助言のタグ（どの分野か）
- *   からだ・栄養＝黄緑 / 医療・薬＝水色 / 手続き・移動＝ベージュ / 産後＝赤紫 / 父向け＝ブルー
+ *   からだ・栄養＝黄緑 / 医療・薬＝水色 / 手続き・準備＝ベージュ / 産後＝赤紫 / 父向け＝ブルー
  *
  * 色だけに頼らず、必ず文字のラベル（「タスク」「助言」など）を併記する。
  */
@@ -62,7 +62,7 @@ export type TagFamily = 'body' | 'medical' | 'admin' | 'postpartum' | 'father' |
 export const TAG_FAMILY_LABEL: Record<TagFamily, string> = {
   body: 'からだ・栄養',
   medical: '医療・薬',
-  admin: '手続き・移動',
+  admin: '手続き・準備',
   postpartum: '産後',
   father: '父向け',
   other: 'その他',
@@ -84,6 +84,7 @@ const TAG_FAMILY: Record<string, TagFamily> = {
   里帰り: 'admin',
   移動: 'admin',
   準備: 'admin',
+  買い物: 'admin',
   ライフハック: 'admin',
   石垣: 'admin',
   産後: 'postpartum',

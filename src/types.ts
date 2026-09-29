@@ -177,4 +177,11 @@ export interface AdviceItem {
   source: string
   /** 未確認の内容（あれば画面に「未確認」と表示する）。追加したアドバイスで使う。 */
   verify?: string
+  /** 問い合わせ先（公式ページで確認できた電話番号だけ）。 */
+  contacts?: AdviceContact[]
+}
+
+export interface AdviceContact {
+  name: string
+  phone: string
 }

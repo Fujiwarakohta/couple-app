@@ -56,7 +56,8 @@ export default function Advice() {
             : `現在：生後 ${stage.ageDays}日（助言は ${week}週相当を表示）`}
         </p>
         <Choice legend="表示する範囲" options={SCOPE_OPTIONS} value={scope} onChange={setScope} />
-        <fieldset>
+        {/* fieldset は中身の幅まで広がろうとするので、min-w-0 で画面の幅に収める */}
+        <fieldset className="min-w-0">
           <legend className="field-label">タグ</legend>
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2">
             <button

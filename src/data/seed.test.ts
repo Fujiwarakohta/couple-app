@@ -9,6 +9,7 @@ import {
   GUIDE_ADVICE,
   NINPU_LIMITS,
   PHASES,
+  ROADMAP_ADVICE,
   SEED_ADVICE,
   ninpuLimitYen,
 } from './static'
@@ -31,8 +32,7 @@ describe('追加したアドバイス（advice_guide.json）', () => {
 
   it('25件を追加し、元の項目の後ろに並べる', () => {
     expect(GUIDE_ADVICE).toHaveLength(25)
-    expect(ADVICE).toHaveLength(33 + 25)
-    expect(ADVICE.slice(33)).toEqual(GUIDE_ADVICE)
+    expect(ADVICE.slice(33, 33 + 25)).toEqual(GUIDE_ADVICE)
   })
 
   it('ID が重複しない', () => {
@@ -81,6 +81,74 @@ describe('追加したアドバイス（advice_guide.json）', () => {
     for (const a of GUIDE_ADVICE) {
       if (!official.test(a.source)) expect(a.verify, a.id).toBeTruthy()
     }
+  })
+})
+
+describe('追加したアドバイス（advice_roadmap.json）', () => {
+  const body = (id: string) => ROADMAP_ADVICE.find((a) => a.id === id)?.body ?? ''
+  const item = (id: string) => ROADMAP_ADVICE.find((a) => a.id === id)
+
+  it('24件を追加し、末尾に並べる', () => {
+    expect(ROADMAP_ADVICE).toHaveLength(24)
+    expect(ADVICE).toHaveLength(33 + 25 + 24)
+    expect(ADVICE.slice(33 + 25)).toEqual(ROADMAP_ADVICE)
+  })
+
+  it('ID が全体で重複しない', () => {
+    const ids = ADVICE.map((a) => a.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('すべての項目に出典・本文・タグ・週数がある', () => {
+    for (const a of ROADMAP_ADVICE) {
+      expect(a.source.length, a.id).toBeGreaterThan(0)
+      expect(a.body.length, a.id).toBeGreaterThan(0)
+      expect(a.tags.length, a.id).toBeGreaterThan(0)
+      expect(a.weeks[0], a.id).toBeLessThanOrEqual(a.weeks[1])
+    }
+  })
+
+  it('公式ページで確認していない項目は、未確認にしている', () => {
+    // 例外は r10（家庭内の段取りで、制度や数値の主張を含まない）だけ
+    const unchecked = ROADMAP_ADVICE.filter(
+      (a) => !a.source.includes('2026-09-29 確認') && !a.verify,
+    ).map((a) => a.id)
+    expect(unchecked).toEqual(['r10'])
+  })
+
+  it('数値は公式ページ・報告書の値のまま', () => {
+    expect(body('r01')).toContain('令和8年10月1日')
+    expect(body('r01')).toContain('1日10名')
+    expect(body('r02')).toContain('14回')
+    expect(body('r06')).toContain('65.7%')
+    expect(body('r06')).toContain('22.8%')
+    expect(body('r11')).toContain('24,000円分')
+    expect(body('r11')).toContain('1,000円×24枚')
+    expect(body('r12')).toContain('1〜5回目1,500円')
+    expect(body('r12')).toContain('6回目以降4,000円')
+    expect(body('r12')).toContain('0円・1,200円')
+    expect(body('r12')).toContain('宿泊型3回')
+    expect(body('r15')).toContain('月15,000円')
+    expect(body('r16')).toContain('48万8000円')
+    expect(body('r17')).toContain('受診日の翌月から起算して2年以内')
+    expect(body('r18')).toContain('3,500円')
+    expect(body('r18')).toContain('検査日から1年間')
+    expect(body('r19')).toContain('67%')
+    expect(body('r19')).toContain('13%')
+  })
+
+  it('電話番号は、既存の窓口マスタ・公式ページの値と一致する', () => {
+    const phones = new Map<string, string>()
+    for (const a of ROADMAP_ADVICE) for (const c of a.contacts ?? []) phones.set(c.name, c.phone)
+    expect(phones.get('石垣市健康福祉センター 健康づくり係')).toBe('0980-88-0088')
+    expect(phones.get('石垣市こども家庭課 給付係')).toBe('0980-87-0771')
+    expect(phones.get('石垣市こども家庭センター')).toBe('0980-87-9009')
+    expect(phones.get('沖縄県立八重山病院')).toBe('0980-87-5557')
+    for (const phone of phones.values()) expect(phone).toMatch(/^0\d{1,3}-\d{2,4}-\d{4}$/)
+  })
+
+  it('既存の seed と食い違う点は、未確認の理由に書いてある', () => {
+    expect(item('r04')?.verify).toContain('窓口が異なる')
   })
 })
 
